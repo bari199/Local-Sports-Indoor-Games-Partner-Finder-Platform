@@ -28,12 +28,7 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
-    preferredGames: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Game",
-      },
-    ],
+    preferredGames: [],
 
     skillLevel: {
       type: String,
