@@ -4,7 +4,7 @@ export const getMyProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
       .select("-password")
-      .populate("preferredGames", "name type");
+      .populate("preferredGames", "name type description");
 
     if (!user) {
       return res.status(404).json({
@@ -29,13 +29,8 @@ export const getMyProfile = async (req, res) => {
 
 export const updateMyProfile = async (req, res) => {
   try {
-    const {
-      name,
-      location,
-      preferredGames,
-      skillLevel,
-      availability,
-    } = req.body;
+    const { name, location, preferredGames, skillLevel, availability } =
+      req.body;
 
     const user = await User.findById(req.user._id);
 
@@ -71,7 +66,7 @@ export const updateMyProfile = async (req, res) => {
 
     const userResponse = await User.findById(updatedUser._id)
       .select("-password")
-      .populate("preferredGames", "name type");
+      .populate("preferredGames", "name type description");
 
     return res.status(200).json({
       success: true,
