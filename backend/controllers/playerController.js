@@ -1,13 +1,9 @@
+import mongoose from "mongoose";
 import User from "../models/User.js";
 
 export const getPlayers = async (req, res) => {
   try {
-    const {
-      game,
-      location,
-      skillLevel,
-      availability,
-    } = req.query;
+    const { game, location, skillLevel, availability } = req.query;
 
     const filter = {
       _id: { $ne: req.user._id },
@@ -29,6 +25,13 @@ export const getPlayers = async (req, res) => {
 
     // Game filter
     if (game) {
+      if (!mongoose.Types.ObjectId.isValid(game)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid game ID",
+        });
+      }
+
       filter.preferredGames = game;
     }
 

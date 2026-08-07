@@ -9,48 +9,56 @@ const games = [
   {
     name: "Badminton",
     type: "Racquet Sport",
+    image:"",
     description:
       "A fast-paced indoor racquet sport played in singles or doubles.",
   },
   {
     name: "Table Tennis",
     type: "Indoor Sport",
+    image:"",
     description:
       "A fast indoor paddle sport played on a table between two or four players.",
   },
   {
     name: "Basketball",
     type: "Team Sport",
+    image:"",
     description:
       "A team sport where players score by shooting a ball through a basketball hoop.",
   },
   {
     name: "Football",
     type: "Team Sport",
+    image:"",
     description:
       "A team sport played by two teams competing to score goals.",
   },
   {
     name: "Cricket",
     type: "Bat-and-Ball Sport",
+    image:"",
     description:
       "A bat-and-ball team sport played between two teams on a cricket field.",
   },
   {
     name: "Volleyball",
     type: "Team Sport",
+    image:"",
     description:
       "A team sport where players hit a ball over a net to score points.",
   },
   {
     name: "Chess",
     type: "Board Game",
+    image:"",
     description:
       "A strategic two-player board game focused on planning and tactical play.",
   },
   {
     name: "Carrom",
     type: "Indoor Board Game",
+    image:"",
     description:
       "A popular indoor tabletop game played by striking discs into corner pockets.",
   },
