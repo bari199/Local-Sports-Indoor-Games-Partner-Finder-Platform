@@ -93,6 +93,7 @@ export const getReceivedRequests = async (req, res) => {
   try {
     const requests = await PartnerRequest.find({
       receiver: req.user._id,
+      status: "pending",
     })
       .populate("sender", "name location skillLevel")
       .populate("game", "name type")
@@ -117,6 +118,7 @@ export const getSentRequests = async (req, res) => {
   try {
     const requests = await PartnerRequest.find({
       sender: req.user._id,
+      status: "pending",
     })
       .populate("receiver", "name location skillLevel")
       .populate("game", "name type")
@@ -133,6 +135,47 @@ export const getSentRequests = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Server error while fetching sent requests",
+    });
+  }
+};
+
+export const getMyPartners = async (req, res) => {
+  try {
+    const requests = await PartnerRequest.find({
+      status: "accepted",
+      $or: [
+        { sender: req.user._id },
+        { receiver: req.user._id },
+      ],
+    })
+      .populate("sender", "name location skillLevel")
+      .populate("receiver", "name location skillLevel")
+      .populate("game", "name type")
+      .sort({ updatedAt: -1 });
+
+    const partners = requests.map((request) => {
+      const isSender =
+        request.sender._id.toString() === req.user._id.toString();
+
+      return {
+        requestId: request._id,
+        partner: isSender ? request.receiver : request.sender,
+        game: request.game,
+        connectedAt: request.updatedAt,
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      count: partners.length,
+      partners,
+    });
+  } catch (error) {
+    console.error("Get partners error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching partners",
     });
   }
 };

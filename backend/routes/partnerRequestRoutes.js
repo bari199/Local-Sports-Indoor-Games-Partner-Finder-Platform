@@ -5,6 +5,7 @@ import {
   getReceivedRequests,
   getSentRequests,
   updateRequestStatus,
+  getMyPartners,
 } from "../controllers/partnerRequestController.js";
 
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -22,5 +23,7 @@ router.patch(
   authMiddleware,
   updateRequestStatus
 );
+
+router.get("/partners", authMiddleware, getMyPartners);
 
 export default router;
