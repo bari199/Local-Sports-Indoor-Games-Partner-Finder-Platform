@@ -6,6 +6,7 @@ import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import gameRoutes from "./routes/gameRoutes.js";
 import playerRoutes from "./routes/playerRoutes.js";
+import partnerRequestRoutes from "./routes/partnerRequestRoutes.js";
 
 
 dotenv.config();
@@ -36,6 +37,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/games", gameRoutes);
 app.use("/api/players", playerRoutes);
+app.use("/api/requests", partnerRequestRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({
