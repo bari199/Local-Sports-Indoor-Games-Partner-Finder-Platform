@@ -5,6 +5,7 @@ import connectDB from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import gameRoutes from "./routes/gameRoutes.js";
+import playerRoutes from "./routes/playerRoutes.js";
 
 
 dotenv.config();
@@ -34,6 +35,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/games", gameRoutes);
+app.use("/api/players", playerRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({
