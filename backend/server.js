@@ -2,15 +2,14 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
+import authRoutes from "./routes/authRoutes.js";
 
 dotenv.config();
 
 const app = express();
 
-// Database
 connectDB();
 
-// Middleware
 app.use(
   cors({
     origin: process.env.CLIENT_URL,
@@ -28,11 +27,14 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// Root
+// Routes
+app.use("/api/auth", authRoutes);
+
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
-    message: "Local Sports & Indoor Games Partner Finder Platform API",
+    message:
+      "Local Sports & Indoor Games Partner Finder Platform API",
   });
 });
 
