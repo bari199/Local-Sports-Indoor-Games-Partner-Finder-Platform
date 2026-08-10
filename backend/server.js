@@ -1,15 +1,15 @@
+import "dotenv/config";
+
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
+
 import connectDB from "./config/db.js";
-import userRoutes from "./routes/userRoutes.js";
+import cloudinary from "./config/cloudinary.js";
+
 import authRoutes from "./routes/authRoutes.js";
 import gameRoutes from "./routes/gameRoutes.js";
 import playerRoutes from "./routes/playerRoutes.js";
 import partnerRequestRoutes from "./routes/partnerRequestRoutes.js";
-
-
-dotenv.config();
 
 const app = express();
 
@@ -24,20 +24,36 @@ app.use(
 
 app.use(express.json());
 
-// Health Check
+
+
+
+// ==========================================
+// HEALTH CHECK
+// ==========================================
+
 app.get("/api/health", (req, res) => {
   res.status(200).json({
     success: true,
-    message: "Local Sports Partner Finder API is running",
+    message:
+      "Local Sports Partner Finder API is running",
   });
 });
 
-// Routes
+// ==========================================
+// ROUTES
+// ==========================================
+
 app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
+
 app.use("/api/games", gameRoutes);
+
 app.use("/api/players", playerRoutes);
+
 app.use("/api/requests", partnerRequestRoutes);
+
+// ==========================================
+// ROOT
+// ==========================================
 
 app.get("/", (req, res) => {
   res.status(200).json({
@@ -47,8 +63,14 @@ app.get("/", (req, res) => {
   });
 });
 
+// ==========================================
+// SERVER
+// ==========================================
+
 const PORT = process.env.PORT || 8000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(
+    `Server running on port ${PORT}`
+  );
 });

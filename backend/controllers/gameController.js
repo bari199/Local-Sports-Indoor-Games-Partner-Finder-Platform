@@ -3,7 +3,7 @@ import Game from "../models/Game.js";
 export const getGames = async (req, res) => {
   try {
     const games = await Game.find({ isActive: true })
-      .select("name type description")
+      .select("name type image description")
       .sort({ name: 1 });
 
     return res.status(200).json({
@@ -26,7 +26,7 @@ export const getGameById = async (req, res) => {
     const game = await Game.findOne({
       _id: req.params.id,
       isActive: true,
-    }).select("name type description");
+    }).select("name type image description");
 
     if (!game) {
       return res.status(404).json({

@@ -22,6 +22,12 @@ const userSchema = new mongoose.Schema(
       minlength: 6,
     },
 
+    image: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
     location: {
       type: String,
       trim: true,
@@ -37,7 +43,11 @@ const userSchema = new mongoose.Schema(
 
     skillLevel: {
       type: String,
-      enum: ["Beginner", "Intermediate", "Advanced"],
+      enum: [
+        "Beginner",
+        "Intermediate",
+        "Advanced",
+      ],
       default: "Beginner",
     },
 
@@ -59,6 +69,9 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model(
+  "User",
+  userSchema
+);
 
 export default User;

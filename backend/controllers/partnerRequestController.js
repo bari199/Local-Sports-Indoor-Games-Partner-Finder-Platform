@@ -152,21 +152,26 @@ export const sendPartnerRequest = async (req, res) => {
 
     /* --------------------------------------------------------
        9. Populate response
+
+       IMPORTANT:
+       User model uses "image", not "Image"
+       and not "profileImage".
     -------------------------------------------------------- */
 
-    const populatedRequest = await PartnerRequest.findById(request._id)
-      .populate(
-        "sender",
-        "name profileImage location skillLevel"
-      )
-      .populate(
-        "receiver",
-        "name profileImage location skillLevel"
-      )
-      .populate(
-        "game",
-        "name type image"
-      );
+    const populatedRequest =
+      await PartnerRequest.findById(request._id)
+        .populate(
+          "sender",
+          "name image location skillLevel"
+        )
+        .populate(
+          "receiver",
+          "name image location skillLevel"
+        )
+        .populate(
+          "game",
+          "name type image"
+        );
 
     /* --------------------------------------------------------
        10. Response
@@ -190,7 +195,6 @@ export const sendPartnerRequest = async (req, res) => {
   }
 };
 
-
 /* ============================================================
    GET RECEIVED REQUESTS
 ============================================================ */
@@ -203,7 +207,7 @@ export const getReceivedRequests = async (req, res) => {
     })
       .populate(
         "sender",
-        "name profileImage location skillLevel"
+        "name image location skillLevel"
       )
       .populate(
         "game",
@@ -230,7 +234,6 @@ export const getReceivedRequests = async (req, res) => {
   }
 };
 
-
 /* ============================================================
    GET SENT REQUESTS
 ============================================================ */
@@ -243,7 +246,7 @@ export const getSentRequests = async (req, res) => {
     })
       .populate(
         "receiver",
-        "name profileImage location skillLevel"
+        "name image location skillLevel"
       )
       .populate(
         "game",
@@ -270,56 +273,59 @@ export const getSentRequests = async (req, res) => {
   }
 };
 
-
 /* ============================================================
    GET MY PARTNERS
 ============================================================ */
 
 export const getMyPartners = async (req, res) => {
   try {
-    const requests = await PartnerRequest.find({
-      status: "accepted",
+    const requests =
+      await PartnerRequest.find({
+        status: "accepted",
 
-      $or: [
-        {
-          sender: req.user._id,
-        },
-        {
-          receiver: req.user._id,
-        },
-      ],
-    })
-      .populate(
-        "sender",
-        "name profileImage location skillLevel"
-      )
-      .populate(
-        "receiver",
-        "name profileImage location skillLevel"
-      )
-      .populate(
-        "game",
-        "name type image"
-      )
-      .sort({ updatedAt: -1 });
+        $or: [
+          {
+            sender: req.user._id,
+          },
+          {
+            receiver: req.user._id,
+          },
+        ],
+      })
+        .populate(
+          "sender",
+          "name image location skillLevel"
+        )
+        .populate(
+          "receiver",
+          "name image location skillLevel"
+        )
+        .populate(
+          "game",
+          "name type image"
+        )
+        .sort({ updatedAt: -1 });
 
-    const partners = requests.map((request) => {
-      const isSender =
-        request.sender._id.toString() ===
-        req.user._id.toString();
+    const partners = requests.map(
+      (request) => {
+        const isSender =
+          request.sender._id.toString() ===
+          req.user._id.toString();
 
-      return {
-        requestId: request._id,
+        return {
+          requestId: request._id,
 
-        partner: isSender
-          ? request.receiver
-          : request.sender,
+          partner: isSender
+            ? request.receiver
+            : request.sender,
 
-        game: request.game,
+          game: request.game,
 
-        connectedAt: request.updatedAt,
-      };
-    });
+          connectedAt:
+            request.updatedAt,
+        };
+      }
+    );
 
     return res.status(200).json({
       success: true,
@@ -340,13 +346,15 @@ export const getMyPartners = async (req, res) => {
   }
 };
 
-
 /* ============================================================
    UPDATE REQUEST STATUS
    ACCEPT / REJECT
 ============================================================ */
 
-export const updateRequestStatus = async (req, res) => {
+export const updateRequestStatus = async (
+  req,
+  res
+) => {
   try {
     const { status } = req.body;
     const { id } = req.params;
@@ -355,7 +363,11 @@ export const updateRequestStatus = async (req, res) => {
        1. Validate status
     -------------------------------------------------------- */
 
-    if (!["accepted", "rejected"].includes(status)) {
+    if (
+      !["accepted", "rejected"].includes(
+        status
+      )
+    ) {
       return res.status(400).json({
         success: false,
         message:
@@ -367,7 +379,9 @@ export const updateRequestStatus = async (req, res) => {
        2. Validate request ID
     -------------------------------------------------------- */
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (
+      !mongoose.Types.ObjectId.isValid(id)
+    ) {
       return res.status(400).json({
         success: false,
         message: "Invalid request ID",
@@ -379,10 +393,11 @@ export const updateRequestStatus = async (req, res) => {
        Only receiver can accept/reject
     -------------------------------------------------------- */
 
-    const request = await PartnerRequest.findOne({
-      _id: id,
-      receiver: req.user._id,
-    });
+    const request =
+      await PartnerRequest.findOne({
+        _id: id,
+        receiver: req.user._id,
+      });
 
     if (!request) {
       return res.status(404).json({
@@ -395,7 +410,9 @@ export const updateRequestStatus = async (req, res) => {
        4. Request must be pending
     -------------------------------------------------------- */
 
-    if (request.status !== "pending") {
+    if (
+      request.status !== "pending"
+    ) {
       return res.status(400).json({
         success: false,
         message:
@@ -416,14 +433,16 @@ export const updateRequestStatus = async (req, res) => {
     -------------------------------------------------------- */
 
     const updatedRequest =
-      await PartnerRequest.findById(request._id)
+      await PartnerRequest.findById(
+        request._id
+      )
         .populate(
           "sender",
-          "name profileImage location skillLevel"
+          "name image location skillLevel"
         )
         .populate(
           "receiver",
-          "name profileImage location skillLevel"
+          "name image location skillLevel"
         )
         .populate(
           "game",
