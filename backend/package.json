@@ -7,7 +7,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.js",
-    "seed:games": "node seed/gameSeed.js"
+    "seed:games": "node seed/gameSeed.js",
+    "seed:admin": "node seed/adminSeed.js"
+    
   },
   "repository": {
     "type": "git",

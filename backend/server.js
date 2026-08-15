@@ -11,6 +11,8 @@ import gameRoutes from "./routes/gameRoutes.js";
 import playerRoutes from "./routes/playerRoutes.js";
 import partnerRequestRoutes from "./routes/partnerRequestRoutes.js";
 
+import adminRoutes from "./routes/adminRoutes.js";
+
 const app = express();
 
 connectDB();
@@ -44,6 +46,8 @@ app.get("/api/health", (req, res) => {
 // ==========================================
 
 app.use("/api/auth", authRoutes);
+
+app.use("/api/admin",adminRoutes);
 
 app.use("/api/games", gameRoutes);
 
