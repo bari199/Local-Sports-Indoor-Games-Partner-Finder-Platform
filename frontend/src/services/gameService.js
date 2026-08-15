@@ -11,3 +11,9 @@ export const getGameById = async (gameId) => {
 
   return response.data;
 };
+
+export const getAllGames = async () => {
+  const response = await api.get("/games");
+
+  return response.data;
+};

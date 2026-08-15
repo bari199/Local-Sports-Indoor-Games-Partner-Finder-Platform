@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
+import Landing from "./pages/home/Landing";
 import Profile from "./pages/profile/Profile";
 import EditProfile from "./pages/profile/EditProfile";
 import Games from "./pages/games/Games";
@@ -20,6 +21,10 @@ function App() {
 
       <Routes>
         {/* Public */}
+         <Route
+        path="/"
+        element={<Landing />}
+      />
 
         <Route path="/login" element={<Login />} />
 
