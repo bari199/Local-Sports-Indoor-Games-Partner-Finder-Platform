@@ -1,4 +1,4 @@
-import Navbar from "@/components/common/Navbar";
+import Navbar from "@/components/layout/Navbar";
 import GiftBanner from "@/components/common/GiftBanner";
 import HeroSection from "@/components/landing/HeroSection";
 import BookVenues from "@/components/landing/BookVenues";
