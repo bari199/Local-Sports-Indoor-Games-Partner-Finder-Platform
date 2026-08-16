@@ -30,7 +30,7 @@ export default function Footer() {
             </div>
             <span className="text-base font-bold text-white">SportsFinder</span>
           </div>
-          <p className="text-xs text-slate-500">© 2024 Playo Sports Solutions Pvt. Ltd.</p>
+          <p className="text-xs text-slate-500">© 2026 Sports Finders Pvt. Ltd.</p>
           <p className="text-xs text-slate-500">All Rights Reserved.</p>
           <div className="mt-4 flex gap-3">
             {[FaInstagram, FaFacebookF, FaTwitter, FaLinkedinIn].map((Icon, i) => (
