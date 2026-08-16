@@ -1,4 +1,7 @@
 import { FaInstagram, FaFacebookF, FaTwitter, FaLinkedinIn } from "react-icons/fa";
+import {
+  Trophy,
+} from "lucide-react";
 import { MdQrCode2 } from "react-icons/md";
 
 const columns = [
@@ -23,9 +26,9 @@ export default function Footer() {
         <div className="col-span-2 md:col-span-2">
           <div className="mb-2 flex items-center gap-1.5">
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
-              P
+              <Trophy size={19} />
             </div>
-            <span className="text-base font-bold text-white">PLAYO</span>
+            <span className="text-base font-bold text-white">SportsFinder</span>
           </div>
           <p className="text-xs text-slate-500">© 2024 Playo Sports Solutions Pvt. Ltd.</p>
           <p className="text-xs text-slate-500">All Rights Reserved.</p>
