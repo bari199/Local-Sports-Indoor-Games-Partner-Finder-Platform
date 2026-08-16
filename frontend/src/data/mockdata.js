@@ -88,12 +88,12 @@ export const games = [
 ];
 
 export const popularSports = [
-  { name: "Badminton", image: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=400&q=80" },
+  { name: "Badminton", image: "https://images.unsplash.com/photo-1733141731875-8e33d5f2bd36?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
   { name: "Football", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=400&q=80" },
   { name: "Cricket", image: "https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=400&q=80" },
   { name: "Swimming", image: "https://images.unsplash.com/photo-1530549387789-4c1017266635?w=400&q=80" },
   { name: "Tennis", image: "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=400&q=80" },
-  { name: "Table Tennis", image: "https://images.unsplash.com/photo-1611251126741-84713e58a92f?w=400&q=80" },
+  { name: "Table Tennis", image: "https://images.unsplash.com/photo-1646978567314-32cfd5a8854e?q=80&w=955&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
 ];
 
 export const spotlightCards = [

@@ -10,7 +10,8 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-
+import Footer from "@/components/common/Footer";
+import GiftBanner from "@/components/common/GiftBanner";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
@@ -83,6 +84,7 @@ const Games = () => {
 
   return (
     <main className="min-h-screen bg-[#F8FAFC]">
+      <GiftBanner/>
 
       <div className="
         mx-auto
@@ -532,6 +534,7 @@ const Games = () => {
           )}
 
       </div>
+      <Footer/>
     </main>
   );
 };

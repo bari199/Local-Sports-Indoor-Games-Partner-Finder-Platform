@@ -28,7 +28,7 @@ const AuthLayout = ({ children, title, subtitle }) => {
 
               <div>
                 <p className="text-lg font-bold tracking-tight">
-                  SportsConnect
+                  SportsFinder
                 </p>
 
                 <p className="text-xs text-white/70">
@@ -72,7 +72,7 @@ const AuthLayout = ({ children, title, subtitle }) => {
               </div>
 
               <h2 className="text-2xl font-bold text-slate-900">
-                SportsConnect
+                SportsFinder
               </h2>
             </div>
 

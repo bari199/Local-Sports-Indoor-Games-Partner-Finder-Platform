@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-
+import Footer from "@/components/common/Footer";
+import GiftBanner from "@/components/common/GiftBanner";
 import {
   Search,
   Users,
@@ -111,6 +112,7 @@ const Players = () => {
 
   return (
     <main className="min-h-screen bg-[#F8FAFC]">
+        <GiftBanner/>
 
       <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 lg:px-8 lg:py-10">
 
@@ -147,7 +149,6 @@ const Players = () => {
         >
 
           {/* Background */}
-
           <div
             className="
               pointer-events-none
@@ -527,6 +528,7 @@ const Players = () => {
             )}
         </section>
       </div>
+      <Footer/>
     </main>
   );
 };

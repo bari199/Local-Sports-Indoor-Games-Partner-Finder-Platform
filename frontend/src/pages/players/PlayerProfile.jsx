@@ -3,6 +3,7 @@ import {
   useNavigate,
   useParams,
 } from "react-router-dom";
+import Footer from "@/components/common/Footer";
 
 import {
   ArrowLeft,
@@ -758,6 +759,7 @@ const PlayerProfile = () => {
         </section>
 
       </div>
+      <Footer/>
     </main>
   );
 };

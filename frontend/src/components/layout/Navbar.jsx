@@ -58,7 +58,7 @@ const Navbar = () => {
     } catch (error) {
       console.error("Request count error:", error);
 
-      // Don't show toast for background request count failure.
+      // Background request failure should not disturb the user.
       setRequestCount(0);
     }
   };
@@ -98,7 +98,6 @@ const Navbar = () => {
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
-      // Clear authentication immediately
       localStorage.removeItem("accessToken");
 
       setUser(null);
@@ -168,7 +167,8 @@ const Navbar = () => {
           max-w-7xl
           items-center
           justify-between
-          px-4
+          gap-3
+          px-3
           sm:px-6
           lg:px-8
         "
@@ -179,12 +179,25 @@ const Navbar = () => {
 
         <Link
           to={isAuthenticated ? "/dashboard" : "/"}
-          className="group flex items-center gap-2.5"
+          className="
+            group
+            flex
+            min-w-0
+            shrink
+            items-center
+            gap-2
+          "
         >
+          {/* Logo Icon */}
+
           <div
             className="
-              flex h-10 w-10
-              items-center justify-center
+              flex
+              h-9
+              w-9
+              shrink-0
+              items-center
+              justify-center
               rounded-xl
               bg-gradient-to-br
               from-[#0078BD]
@@ -195,18 +208,28 @@ const Navbar = () => {
               transition-transform
               duration-200
               group-hover:scale-105
+              sm:h-10
+              sm:w-10
             "
           >
-            <Trophy size={19} />
+            <Trophy
+              size={18}
+              className="sm:h-[19px] sm:w-[19px]"
+            />
           </div>
 
-          <div className="hidden sm:block">
+          {/* Brand */}
+
+          <div className="min-w-0">
             <p
               className="
-                text-[15px]
+                truncate
+                text-[14px]
                 font-black
+                leading-tight
                 tracking-tight
-                text-slate-900
+                text-slate-800
+                sm:text-[16px]
               "
             >
               SportsFinder
@@ -214,10 +237,14 @@ const Navbar = () => {
 
             <p
               className="
-                text-[10px]
+                hidden
+                text-[9px]
                 font-medium
+                leading-tight
                 tracking-wide
                 text-slate-400
+                xs:block
+                sm:text-[10px]
               "
             >
               Find. Connect. Play.
@@ -236,7 +263,8 @@ const Navbar = () => {
               items-center
               gap-1
               rounded-2xl
-              border border-slate-200/70
+              border
+              border-slate-200/70
               bg-slate-50/80
               p-1
               md:flex
@@ -252,7 +280,8 @@ const Navbar = () => {
                   className={({ isActive }) =>
                     `
                     relative
-                    flex items-center
+                    flex
+                    items-center
                     gap-2
                     rounded-xl
                     px-3.5
@@ -324,7 +353,15 @@ const Navbar = () => {
             DESKTOP RIGHT SIDE
         ==================================================== */}
 
-        <div className="hidden items-center gap-2.5 md:flex">
+        <div
+          className="
+            hidden
+            shrink-0
+            items-center
+            gap-2.5
+            md:flex
+          "
+        >
           {/* ==================================================
               LOGGED OUT
           ================================================== */}
@@ -419,7 +456,10 @@ const Navbar = () => {
 
                 <div
                   className="
-                    flex h-10 w-10
+                    flex
+                    h-10
+                    w-10
+                    shrink-0
                     items-center
                     justify-center
                     overflow-hidden
@@ -455,11 +495,15 @@ const Navbar = () => {
                   aria-label="Open menu"
                   aria-expanded={menuOpen}
                   className="
-                    flex h-10 w-10
+                    flex
+                    h-10
+                    w-10
+                    shrink-0
                     items-center
                     justify-center
                     rounded-xl
-                    border border-slate-200
+                    border
+                    border-slate-200
                     bg-white
                     text-slate-500
                     transition-all
@@ -486,6 +530,7 @@ const Navbar = () => {
                       absolute
                       right-0
                       top-[calc(100%+10px)]
+                      z-50
                       w-60
                       overflow-hidden
                       rounded-2xl
@@ -510,7 +555,9 @@ const Navbar = () => {
                       <div className="flex items-center gap-3">
                         <div
                           className="
-                            flex h-10 w-10
+                            flex
+                            h-10
+                            w-10
                             shrink-0
                             items-center
                             justify-center
@@ -563,10 +610,12 @@ const Navbar = () => {
                       onClick={() => setMenuOpen(false)}
                       className="
                         group
-                        flex items-center
+                        flex
+                        items-center
                         justify-between
                         rounded-xl
-                        px-3 py-2.5
+                        px-3
+                        py-2.5
                         text-sm
                         font-semibold
                         text-slate-600
@@ -597,10 +646,12 @@ const Navbar = () => {
                       onClick={() => setMenuOpen(false)}
                       className="
                         group
-                        flex items-center
+                        flex
+                        items-center
                         justify-between
                         rounded-xl
-                        px-3 py-2.5
+                        px-3
+                        py-2.5
                         text-sm
                         font-semibold
                         text-slate-600
@@ -630,10 +681,12 @@ const Navbar = () => {
                       to="/requests"
                       onClick={() => setMenuOpen(false)}
                       className="
-                        flex items-center
+                        flex
+                        items-center
                         justify-between
                         rounded-xl
-                        px-3 py-2.5
+                        px-3
+                        py-2.5
                         text-sm
                         font-semibold
                         text-slate-600
@@ -650,7 +703,8 @@ const Navbar = () => {
                       {requestCount > 0 && (
                         <span
                           className="
-                            flex h-5
+                            flex
+                            h-5
                             min-w-5
                             items-center
                             justify-center
@@ -678,11 +732,13 @@ const Navbar = () => {
                         navigate("/settings");
                       }}
                       className="
-                        flex w-full
+                        flex
+                        w-full
                         items-center
                         gap-3
                         rounded-xl
-                        px-3 py-2.5
+                        px-3
+                        py-2.5
                         text-left
                         text-sm
                         font-semibold
@@ -705,11 +761,13 @@ const Navbar = () => {
                       onClick={handleLogout}
                       disabled={loggingOut}
                       className="
-                        flex w-full
+                        flex
+                        w-full
                         items-center
                         gap-3
                         rounded-xl
-                        px-3 py-2.5
+                        px-3
+                        py-2.5
                         text-left
                         text-sm
                         font-semibold
@@ -737,8 +795,17 @@ const Navbar = () => {
             MOBILE RIGHT SIDE
         ==================================================== */}
 
-        <div className="md:hidden">
-          {/* Logged Out */}
+        <div
+          className="
+            flex
+            shrink-0
+            items-center
+            md:hidden
+          "
+        >
+          {/* ==================================================
+              MOBILE LOGGED OUT
+          ================================================== */}
 
           {!isAuthenticated && (
             <div className="flex items-center gap-1.5">
@@ -746,12 +813,15 @@ const Navbar = () => {
                 to="/login"
                 className="
                   rounded-lg
-                  px-2.5
+                  px-2
                   py-2
-                  text-sm
+                  text-xs
                   font-semibold
                   text-slate-600
+                  transition
                   hover:bg-slate-100
+                  sm:px-2.5
+                  sm:text-sm
                 "
               >
                 Login
@@ -762,12 +832,15 @@ const Navbar = () => {
                 className="
                   rounded-lg
                   bg-[#0078BD]
-                  px-3
+                  px-2.5
                   py-2
-                  text-sm
+                  text-xs
                   font-semibold
                   text-white
+                  transition
                   hover:bg-[#0069A7]
+                  sm:px-3
+                  sm:text-sm
                 "
               >
                 Register
@@ -775,7 +848,9 @@ const Navbar = () => {
             </div>
           )}
 
-          {/* Logged In */}
+          {/* ==================================================
+              MOBILE LOGGED IN
+          ================================================== */}
 
           {isAuthenticated && (
             <button
@@ -787,11 +862,15 @@ const Navbar = () => {
               aria-expanded={mobileOpen}
               className="
                 relative
-                flex h-10 w-10
+                flex
+                h-10
+                w-10
+                shrink-0
                 items-center
                 justify-center
                 rounded-xl
-                border border-slate-200
+                border
+                border-slate-200
                 bg-white
                 text-slate-600
                 transition
@@ -839,7 +918,7 @@ const Navbar = () => {
       </div>
 
       {/* ======================================================
-          MOBILE AUTHENTICATED MENU ONLY
+          MOBILE AUTHENTICATED MENU
       ====================================================== */}
 
       {isAuthenticated && mobileOpen && (
@@ -857,7 +936,8 @@ const Navbar = () => {
             <div
               className="
                 mb-3
-                flex items-center
+                flex
+                items-center
                 justify-between
                 rounded-2xl
                 bg-slate-50
@@ -867,7 +947,10 @@ const Navbar = () => {
               <div className="flex items-center gap-3">
                 <div
                   className="
-                    flex h-11 w-11
+                    flex
+                    h-11
+                    w-11
+                    shrink-0
                     items-center
                     justify-center
                     overflow-hidden
@@ -887,8 +970,8 @@ const Navbar = () => {
                   )}
                 </div>
 
-                <div>
-                  <p className="text-sm font-bold text-slate-900">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-bold text-slate-900">
                     {user?.name || "User"}
                   </p>
 
@@ -914,10 +997,12 @@ const Navbar = () => {
                     }
                     className={({ isActive }) =>
                       `
-                      flex items-center
+                      flex
+                      items-center
                       justify-between
                       rounded-xl
-                      px-3 py-3
+                      px-3
+                      py-3
                       text-sm
                       font-semibold
                       transition
@@ -932,6 +1017,7 @@ const Navbar = () => {
                   >
                     <div className="flex items-center gap-3">
                       <Icon size={18} />
+
                       {item.name}
                     </div>
 
@@ -939,7 +1025,8 @@ const Navbar = () => {
                       requestCount > 0 && (
                         <span
                           className="
-                            flex min-h-[20px]
+                            flex
+                            min-h-[20px]
                             min-w-[20px]
                             items-center
                             justify-center
@@ -966,36 +1053,46 @@ const Navbar = () => {
             <div className="my-3 border-t border-slate-100" />
 
             <div className="space-y-1">
+              {/* Settings */}
+
               <Link
                 to="/settings"
                 onClick={() =>
                   setMobileOpen(false)
                 }
                 className="
-                  flex items-center
+                  flex
+                  items-center
                   gap-3
                   rounded-xl
-                  px-3 py-3
+                  px-3
+                  py-3
                   text-sm
                   font-semibold
                   text-slate-600
+                  transition
                   hover:bg-slate-50
                 "
               >
                 <Settings size={18} />
+
                 Settings
               </Link>
+
+              {/* Logout */}
 
               <button
                 type="button"
                 onClick={handleLogout}
                 disabled={loggingOut}
                 className="
-                  flex w-full
+                  flex
+                  w-full
                   items-center
                   gap-3
                   rounded-xl
-                  px-3 py-3
+                  px-3
+                  py-3
                   text-left
                   text-sm
                   font-semibold
