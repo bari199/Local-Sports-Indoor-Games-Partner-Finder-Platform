@@ -87,18 +87,38 @@ const AdminDashboard = () => {
     },
   ];
 
+  /* ============================================
+     LOADING
+  ============================================ */
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 p-6">
-        <div className="mx-auto max-w-7xl">
-          <div className="h-8 w-56 animate-pulse rounded bg-slate-200" />
+      <div className="min-h-[calc(100vh-5rem)] bg-slate-50 px-4 py-5 sm:px-6 sm:py-6">
+        <div className="mx-auto w-full max-w-7xl">
+          {/* Loading Header */}
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 animate-pulse rounded-xl bg-slate-200 sm:h-11 sm:w-11" />
 
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-2">
+              <div className="h-6 w-44 animate-pulse rounded bg-slate-200 sm:h-7 sm:w-56" />
+
+              <div className="h-3 w-56 animate-pulse rounded bg-slate-200 sm:w-72" />
+            </div>
+          </div>
+
+          {/* Loading Cards */}
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:mt-8 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
             {Array.from({ length: 7 }).map(
               (_, index) => (
                 <div
                   key={index}
-                  className="h-32 animate-pulse rounded-2xl bg-white shadow-sm"
+                  className="
+                    h-32
+                    animate-pulse
+                    rounded-2xl
+                    bg-white
+                    shadow-sm
+                    sm:h-36
+                  "
                 />
               )
             )}
@@ -108,16 +128,19 @@ const AdminDashboard = () => {
     );
   }
 
+  /* ============================================
+     ERROR
+  ============================================ */
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-50 p-6">
-        <div className="mx-auto max-w-7xl">
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
-            <h2 className="text-lg font-semibold text-red-700">
+      <div className="min-h-[calc(100vh-5rem)] bg-slate-50 px-4 py-5 sm:px-6 sm:py-6">
+        <div className="mx-auto w-full max-w-7xl">
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-4 sm:p-6">
+            <h2 className="text-base font-semibold text-red-700 sm:text-lg">
               Unable to load dashboard
             </h2>
 
-            <p className="mt-2 text-sm text-red-600">
+            <p className="mt-2 break-words text-sm text-red-600">
               {error}
             </p>
           </div>
@@ -126,49 +149,165 @@ const AdminDashboard = () => {
     );
   }
 
+  /* ============================================
+     DASHBOARD
+  ============================================ */
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <div className="mx-auto max-w-7xl">
-        {/* Header */}
+    <div className="min-h-[calc(100vh-5rem)] bg-slate-50 px-4 py-5 sm:px-6 sm:py-6">
+      <div className="mx-auto w-full max-w-7xl">
+        {/* ========================================
+            HEADER
+        ======================================== */}
         <div>
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#0078BD] text-white">
-              <ShieldCheck size={23} />
+            {/* Icon */}
+            <div
+              className="
+                flex
+                h-10
+                w-10
+                shrink-0
+                items-center
+                justify-center
+                rounded-xl
+                bg-[#0078BD]
+                text-white
+                sm:h-11
+                sm:w-11
+              "
+            >
+              <ShieldCheck
+                size={21}
+                className="sm:hidden"
+              />
+
+              <ShieldCheck
+                size={23}
+                className="hidden sm:block"
+              />
             </div>
 
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900">
+            {/* Title */}
+            <div className="min-w-0">
+              <h1
+                className="
+                  truncate
+                  text-xl
+                  font-bold
+                  text-slate-900
+                  sm:text-2xl
+                "
+              >
                 Admin Dashboard
               </h1>
 
-              <p className="mt-1 text-sm text-slate-500">
+              <p
+                className="
+                  mt-0.5
+                  text-xs
+                  text-slate-500
+                  sm:mt-1
+                  sm:text-sm
+                "
+              >
                 Manage your SportsConnect platform
               </p>
             </div>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {/* ========================================
+            STATS
+        ======================================== */}
+        <div
+          className="
+            mt-6
+            grid
+            grid-cols-1
+            gap-4
+
+            sm:mt-8
+            sm:grid-cols-2
+            sm:gap-5
+
+            lg:grid-cols-4
+          "
+        >
           {statCards.map((card) => {
             const Icon = card.icon;
 
             return (
               <div
                 key={card.title}
-                className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm"
+                className="
+                  rounded-2xl
+                  border
+                  border-slate-100
+                  bg-white
+                  p-4
+                  shadow-sm
+                  transition
+                  duration-200
+                  hover:shadow-md
+
+                  sm:p-5
+                "
               >
+                {/* Card Top */}
                 <div className="flex items-center justify-between">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-50 text-[#0078BD]">
-                    <Icon size={21} />
+                  <div
+                    className="
+                      flex
+                      h-10
+                      w-10
+                      shrink-0
+                      items-center
+                      justify-center
+                      rounded-xl
+                      bg-sky-50
+                      text-[#0078BD]
+
+                      sm:h-11
+                      sm:w-11
+                    "
+                  >
+                    <Icon
+                      size={20}
+                      className="sm:hidden"
+                    />
+
+                    <Icon
+                      size={21}
+                      className="hidden sm:block"
+                    />
                   </div>
                 </div>
 
-                <p className="mt-5 text-sm font-medium text-slate-500">
+                {/* Card Title */}
+                <p
+                  className="
+                    mt-4
+                    text-sm
+                    font-medium
+                    text-slate-500
+
+                    sm:mt-5
+                  "
+                >
                   {card.title}
                 </p>
 
-                <h2 className="mt-1 text-3xl font-bold text-slate-900">
+                {/* Card Value */}
+                <h2
+                  className="
+                    mt-1
+                    text-2xl
+                    font-bold
+                    text-slate-900
+
+                    sm:text-3xl
+                  "
+                >
                   {card.value}
                 </h2>
               </div>

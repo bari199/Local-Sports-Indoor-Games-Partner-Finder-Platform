@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Loader2, LogIn } from "lucide-react";
 import { toast } from "sonner";
@@ -39,20 +39,43 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.email || !formData.password) {
-      toast.error("Please enter your email and password");
+    // ----------------------------------------------------------
+    // VALIDATION
+    // ----------------------------------------------------------
+
+    if (!formData.email.trim()) {
+      toast.error("Please enter your email address");
+      return;
+    }
+
+    if (!formData.password) {
+      toast.error("Please enter your password");
       return;
     }
 
     try {
       setLoading(true);
 
-      const response = await loginUser(formData);
+      // ========================================================
+      // LOGIN
+      // ========================================================
+
+      const response = await loginUser({
+        email: formData.email.trim(),
+        password: formData.password,
+      });
 
       console.log("LOGIN RESPONSE:", response);
 
+      // --------------------------------------------------------
+      // LOGIN FAILED
+      // --------------------------------------------------------
+
       if (!response?.success) {
-        toast.error(response?.message || "Login failed");
+        toast.error(
+          response?.message || "Login failed"
+        );
+
         return;
       }
 
@@ -60,12 +83,18 @@ const Login = () => {
       // SAVE ACCESS TOKEN
       // ========================================================
 
-      if (response.token) {
-        localStorage.setItem(
-          "accessToken",
-          response.token
+      if (!response?.token) {
+        toast.error(
+          "Login successful, but authentication token was not received."
         );
+
+        return;
       }
+
+      localStorage.setItem(
+        "accessToken",
+        response.token
+      );
 
       console.log(
         "TOKEN:",
@@ -73,16 +102,47 @@ const Login = () => {
       );
 
       // ========================================================
-      // FETCH LOGGED-IN USER
+      // FETCH CURRENT USER
       // ========================================================
 
-      await fetchUser();
+      const loggedInUser = await fetchUser();
 
-      console.log("LOGIN USER FETCHED");
+      console.log(
+        "LOGGED-IN USER:",
+        loggedInUser
+      );
+
+      // --------------------------------------------------------
+      // USER FETCH FAILED
+      // --------------------------------------------------------
+
+      if (!loggedInUser) {
+        toast.error(
+          "Unable to load your account information."
+        );
+
+        return;
+      }
+
+      // ========================================================
+      // SUCCESS
+      // ========================================================
 
       toast.success("Login successful");
 
-      navigate("/dashboard");
+      // ========================================================
+      // ROLE-BASED REDIRECT
+      // ========================================================
+
+      if (loggedInUser.role === "admin") {
+        navigate("/admin/dashboard", {
+          replace: true,
+        });
+      } else {
+        navigate("/dashboard", {
+          replace: true,
+        });
+      }
     } catch (error) {
       console.error("LOGIN ERROR:", error);
 
@@ -131,7 +191,7 @@ const Login = () => {
         />
 
         {/* ======================================================
-            SUBMIT
+            LOGIN BUTTON
         ====================================================== */}
 
         <button
@@ -158,11 +218,13 @@ const Login = () => {
                 size={17}
                 className="animate-spin"
               />
+
               Signing in...
             </>
           ) : (
             <>
               <LogIn size={17} />
+
               Sign in
             </>
           )}
@@ -176,7 +238,11 @@ const Login = () => {
           Don't have an account?{" "}
           <Link
             to="/register"
-            className="font-semibold text-[#0078BD] hover:underline"
+            className="
+              font-semibold
+              text-[#0078BD]
+              hover:underline
+            "
           >
             Create account
           </Link>
