@@ -209,7 +209,7 @@ const Navbar = () => {
                 text-slate-900
               "
             >
-              SportsConnect
+              SportsFinder
             </p>
 
             <p
