@@ -13,6 +13,8 @@ import {
   ChevronRight,
   LogIn,
   UserPlus,
+  Home,
+  UserRoundCheck,
 } from "lucide-react";
 
 import { Link, NavLink, useNavigate } from "react-router-dom";
@@ -40,12 +42,90 @@ const Navbar = () => {
   const isAuthenticated = Boolean(user);
 
   // ============================================================
+  // ROLE
+  // ============================================================
+
+  const isAdmin = user?.role === "admin";
+
+  // ============================================================
+  // DASHBOARD PATH
+  // ============================================================
+
+  const dashboardPath = isAdmin ? "/admin/dashboard" : "/dashboard";
+
+  // ============================================================
+  // ROLE BASED NAVIGATION ITEMS
+  // ============================================================
+
+  const navItems = isAdmin
+    ? [
+        {
+          name: "Home",
+          path: "/",
+          icon: Home,
+        },
+        {
+          name: "Dashboard",
+          path: "/admin/dashboard",
+          icon: LayoutDashboard,
+        },
+        {
+          name: "Users",
+          path: "/admin/users",
+          icon: Users,
+        },
+        {
+          name: "Games",
+          path: "/admin/games",
+          icon: Trophy,
+        },
+        {
+          name: "Requests",
+          path: "/admin/requests",
+          icon: UserRoundCheck,
+        },
+        {
+          name: "Settings",
+          path: "/profile",
+          icon: Settings,
+        },
+      ]
+    : [
+        {
+          name: "Dashboard",
+          path: "/dashboard",
+          icon: Trophy,
+        },
+        {
+          name: "Players",
+          path: "/players",
+          icon: Users,
+        },
+        {
+          name: "Games",
+          path: "/games",
+          icon: Gamepad2,
+        },
+        {
+          name: "Profile",
+          path: "/profile",
+          icon: UserRound,
+        },
+        {
+          name: "Requests",
+          path: "/requests",
+          icon: Users,
+        },
+      ];
+
+  // ============================================================
   // REQUEST COUNT
   // ============================================================
 
   const fetchRequestCount = async () => {
     try {
-      if (!isAuthenticated) {
+      // Admin does not need the normal user's request count
+      if (!isAuthenticated || isAdmin) {
         setRequestCount(0);
         return;
       }
@@ -68,7 +148,7 @@ const Navbar = () => {
   // ============================================================
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || isAdmin) {
       setRequestCount(0);
       return;
     }
@@ -82,7 +162,7 @@ const Navbar = () => {
     return () => {
       clearInterval(interval);
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isAdmin]);
 
   // ============================================================
   // LOGOUT
@@ -117,36 +197,17 @@ const Navbar = () => {
   };
 
   // ============================================================
-  // NAVIGATION ITEMS
+  // CLOSE MENUS WHEN ROUTE CHANGES
   // ============================================================
 
-  const navItems = [
-    {
-      name: "Dashboard",
-      path: "/dashboard",
-      icon: Trophy,
-    },
-    {
-      name: "Players",
-      path: "/players",
-      icon: Users,
-    },
-    {
-      name: "Games",
-      path: "/games",
-      icon: Gamepad2,
-    },
-    {
-      name: "Profile",
-      path: "/profile",
-      icon: UserRound,
-    },
-    {
-      name: "Requests",
-      path: "/requests",
-      icon: Users,
-    },
-  ];
+  const handleNavigation = () => {
+    setMenuOpen(false);
+    setMobileOpen(false);
+  };
+
+  // ============================================================
+  // RENDER
+  // ============================================================
 
   return (
     <header
@@ -178,7 +239,12 @@ const Navbar = () => {
         ==================================================== */}
 
         <Link
-          to={isAuthenticated ? "/dashboard" : "/"}
+          to={
+            isAuthenticated
+              ? dashboardPath
+              : "/"
+          }
+          onClick={handleNavigation}
           className="
             group
             flex
@@ -277,6 +343,7 @@ const Navbar = () => {
                 <NavLink
                   key={item.path}
                   to={item.path}
+                  onClick={handleNavigation}
                   className={({ isActive }) =>
                     `
                     relative
@@ -313,9 +380,10 @@ const Navbar = () => {
 
                   {item.name}
 
-                  {/* Request Badge */}
+                  {/* Request Badge - User Only */}
 
-                  {item.name === "Requests" &&
+                  {!isAdmin &&
+                    item.name === "Requests" &&
                     requestCount > 0 && (
                       <span
                         className="
@@ -448,7 +516,9 @@ const Navbar = () => {
                       text-slate-400
                     "
                   >
-                    {user?.skillLevel || "Player"}
+                    {isAdmin
+                      ? "Administrator"
+                      : user?.skillLevel || "Player"}
                   </p>
                 </div>
 
@@ -603,154 +673,348 @@ const Navbar = () => {
                       </div>
                     </div>
 
-                    {/* Dashboard */}
+                    {/* ==================================================
+                        ADMIN DROPDOWN
+                    ================================================== */}
 
-                    <Link
-                      to="/dashboard"
-                      onClick={() => setMenuOpen(false)}
-                      className="
-                        group
-                        flex
-                        items-center
-                        justify-between
-                        rounded-xl
-                        px-3
-                        py-2.5
-                        text-sm
-                        font-semibold
-                        text-slate-600
-                        transition
-                        hover:bg-[#0078BD]/10
-                        hover:text-[#0078BD]
-                      "
-                    >
-                      <span className="flex items-center gap-3">
-                        <LayoutDashboard size={17} />
-                        Dashboard
-                      </span>
+                    {isAdmin ? (
+                      <>
+                        {/* Dashboard */}
 
-                      <ChevronRight
-                        size={15}
-                        className="
-                          text-slate-300
-                          transition-transform
-                          group-hover:translate-x-0.5
-                        "
-                      />
-                    </Link>
-
-                    {/* Profile */}
-
-                    <Link
-                      to="/profile"
-                      onClick={() => setMenuOpen(false)}
-                      className="
-                        group
-                        flex
-                        items-center
-                        justify-between
-                        rounded-xl
-                        px-3
-                        py-2.5
-                        text-sm
-                        font-semibold
-                        text-slate-600
-                        transition
-                        hover:bg-slate-50
-                        hover:text-slate-900
-                      "
-                    >
-                      <span className="flex items-center gap-3">
-                        <UserRound size={17} />
-                        Profile
-                      </span>
-
-                      <ChevronRight
-                        size={15}
-                        className="
-                          text-slate-300
-                          transition-transform
-                          group-hover:translate-x-0.5
-                        "
-                      />
-                    </Link>
-
-                    {/* Requests */}
-
-                    <Link
-                      to="/requests"
-                      onClick={() => setMenuOpen(false)}
-                      className="
-                        flex
-                        items-center
-                        justify-between
-                        rounded-xl
-                        px-3
-                        py-2.5
-                        text-sm
-                        font-semibold
-                        text-slate-600
-                        transition
-                        hover:bg-slate-50
-                        hover:text-slate-900
-                      "
-                    >
-                      <span className="flex items-center gap-3">
-                        <Users size={17} />
-                        Requests
-                      </span>
-
-                      {requestCount > 0 && (
-                        <span
+                        <Link
+                          to="/admin/dashboard"
+                          onClick={handleNavigation}
                           className="
+                            group
                             flex
-                            h-5
-                            min-w-5
                             items-center
-                            justify-center
-                            rounded-full
-                            bg-red-500
-                            px-1
-                            text-[10px]
-                            font-bold
-                            text-white
+                            justify-between
+                            rounded-xl
+                            px-3
+                            py-2.5
+                            text-sm
+                            font-semibold
+                            text-slate-600
+                            transition
+                            hover:bg-[#0078BD]/10
+                            hover:text-[#0078BD]
                           "
                         >
-                          {requestCount > 99
-                            ? "99+"
-                            : requestCount}
-                        </span>
-                      )}
-                    </Link>
+                          <span className="flex items-center gap-3">
+                            <LayoutDashboard size={17} />
+                            Dashboard
+                          </span>
 
-                    {/* Settings */}
+                          <ChevronRight
+                            size={15}
+                            className="
+                              text-slate-300
+                              transition-transform
+                              group-hover:translate-x-0.5
+                            "
+                          />
+                        </Link>
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMenuOpen(false);
-                        navigate("/settings");
-                      }}
-                      className="
-                        flex
-                        w-full
-                        items-center
-                        gap-3
-                        rounded-xl
-                        px-3
-                        py-2.5
-                        text-left
-                        text-sm
-                        font-semibold
-                        text-slate-600
-                        transition
-                        hover:bg-slate-50
-                        hover:text-slate-900
-                      "
-                    >
-                      <Settings size={17} />
-                      Settings
-                    </button>
+                        {/* Users */}
+
+                        <Link
+                          to="/admin/users"
+                          onClick={handleNavigation}
+                          className="
+                            group
+                            flex
+                            items-center
+                            justify-between
+                            rounded-xl
+                            px-3
+                            py-2.5
+                            text-sm
+                            font-semibold
+                            text-slate-600
+                            transition
+                            hover:bg-slate-50
+                            hover:text-slate-900
+                          "
+                        >
+                          <span className="flex items-center gap-3">
+                            <Users size={17} />
+                            Users
+                          </span>
+
+                          <ChevronRight
+                            size={15}
+                            className="
+                              text-slate-300
+                              transition-transform
+                              group-hover:translate-x-0.5
+                            "
+                          />
+                        </Link>
+
+                        {/* Games */}
+
+                        <Link
+                          to="/admin/games"
+                          onClick={handleNavigation}
+                          className="
+                            group
+                            flex
+                            items-center
+                            justify-between
+                            rounded-xl
+                            px-3
+                            py-2.5
+                            text-sm
+                            font-semibold
+                            text-slate-600
+                            transition
+                            hover:bg-slate-50
+                            hover:text-slate-900
+                          "
+                        >
+                          <span className="flex items-center gap-3">
+                            <Trophy size={17} />
+                            Games
+                          </span>
+
+                          <ChevronRight
+                            size={15}
+                            className="
+                              text-slate-300
+                              transition-transform
+                              group-hover:translate-x-0.5
+                            "
+                          />
+                        </Link>
+
+                        {/* Requests */}
+
+                        <Link
+                          to="/admin/requests"
+                          onClick={handleNavigation}
+                          className="
+                            group
+                            flex
+                            items-center
+                            justify-between
+                            rounded-xl
+                            px-3
+                            py-2.5
+                            text-sm
+                            font-semibold
+                            text-slate-600
+                            transition
+                            hover:bg-slate-50
+                            hover:text-slate-900
+                          "
+                        >
+                          <span className="flex items-center gap-3">
+                            <UserRoundCheck size={17} />
+                            Requests
+                          </span>
+
+                          <ChevronRight
+                            size={15}
+                            className="
+                              text-slate-300
+                              transition-transform
+                              group-hover:translate-x-0.5
+                            "
+                          />
+                        </Link>
+
+                        {/* Settings */}
+
+                        <Link
+                          to="/admin/settings"
+                          onClick={handleNavigation}
+                          className="
+                            group
+                            flex
+                            items-center
+                            justify-between
+                            rounded-xl
+                            px-3
+                            py-2.5
+                            text-sm
+                            font-semibold
+                            text-slate-600
+                            transition
+                            hover:bg-slate-50
+                            hover:text-slate-900
+                          "
+                        >
+                          <span className="flex items-center gap-3">
+                            <Settings size={17} />
+                            Settings
+                          </span>
+
+                          <ChevronRight
+                            size={15}
+                            className="
+                              text-slate-300
+                              transition-transform
+                              group-hover:translate-x-0.5
+                            "
+                          />
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        {/* ==================================================
+                            USER DROPDOWN
+                        ================================================== */}
+
+                        {/* Dashboard */}
+
+                        <Link
+                          to="/dashboard"
+                          onClick={handleNavigation}
+                          className="
+                            group
+                            flex
+                            items-center
+                            justify-between
+                            rounded-xl
+                            px-3
+                            py-2.5
+                            text-sm
+                            font-semibold
+                            text-slate-600
+                            transition
+                            hover:bg-[#0078BD]/10
+                            hover:text-[#0078BD]
+                          "
+                        >
+                          <span className="flex items-center gap-3">
+                            <LayoutDashboard size={17} />
+                            Dashboard
+                          </span>
+
+                          <ChevronRight
+                            size={15}
+                            className="
+                              text-slate-300
+                              transition-transform
+                              group-hover:translate-x-0.5
+                            "
+                          />
+                        </Link>
+
+                        {/* Profile */}
+
+                        <Link
+                          to="/profile"
+                          onClick={handleNavigation}
+                          className="
+                            group
+                            flex
+                            items-center
+                            justify-between
+                            rounded-xl
+                            px-3
+                            py-2.5
+                            text-sm
+                            font-semibold
+                            text-slate-600
+                            transition
+                            hover:bg-slate-50
+                            hover:text-slate-900
+                          "
+                        >
+                          <span className="flex items-center gap-3">
+                            <UserRound size={17} />
+                            Profile
+                          </span>
+
+                          <ChevronRight
+                            size={15}
+                            className="
+                              text-slate-300
+                              transition-transform
+                              group-hover:translate-x-0.5
+                            "
+                          />
+                        </Link>
+
+                        {/* Requests */}
+
+                        <Link
+                          to="/requests"
+                          onClick={handleNavigation}
+                          className="
+                            flex
+                            items-center
+                            justify-between
+                            rounded-xl
+                            px-3
+                            py-2.5
+                            text-sm
+                            font-semibold
+                            text-slate-600
+                            transition
+                            hover:bg-slate-50
+                            hover:text-slate-900
+                          "
+                        >
+                          <span className="flex items-center gap-3">
+                            <Users size={17} />
+                            Requests
+                          </span>
+
+                          {requestCount > 0 && (
+                            <span
+                              className="
+                                flex
+                                h-5
+                                min-w-5
+                                items-center
+                                justify-center
+                                rounded-full
+                                bg-red-500
+                                px-1
+                                text-[10px]
+                                font-bold
+                                text-white
+                              "
+                            >
+                              {requestCount > 99
+                                ? "99+"
+                                : requestCount}
+                            </span>
+                          )}
+                        </Link>
+
+                        {/* Settings */}
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleNavigation();
+                            navigate("/settings");
+                          }}
+                          className="
+                            flex
+                            w-full
+                            items-center
+                            gap-3
+                            rounded-xl
+                            px-3
+                            py-2.5
+                            text-left
+                            text-sm
+                            font-semibold
+                            text-slate-600
+                            transition
+                            hover:bg-slate-50
+                            hover:text-slate-900
+                          "
+                        >
+                          <Settings size={17} />
+                          Settings
+                        </button>
+                      </>
+                    )}
 
                     <div className="my-1.5 border-t border-slate-100" />
 
@@ -886,6 +1150,7 @@ const Navbar = () => {
               )}
 
               {!mobileOpen &&
+                !isAdmin &&
                 requestCount > 0 && (
                   <span
                     className="
@@ -976,13 +1241,17 @@ const Navbar = () => {
                   </p>
 
                   <p className="text-[11px] text-slate-400">
-                    {user?.skillLevel || "Player"}
+                    {isAdmin
+                      ? "Administrator"
+                      : user?.skillLevel || "Player"}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Navigation */}
+            {/* ==================================================
+                ROLE BASED MOBILE NAVIGATION
+            ================================================== */}
 
             <nav className="space-y-1">
               {navItems.map((item) => {
@@ -992,9 +1261,7 @@ const Navbar = () => {
                   <NavLink
                     key={item.path}
                     to={item.path}
-                    onClick={() =>
-                      setMobileOpen(false)
-                    }
+                    onClick={handleNavigation}
                     className={({ isActive }) =>
                       `
                       flex
@@ -1021,7 +1288,8 @@ const Navbar = () => {
                       {item.name}
                     </div>
 
-                    {item.name === "Requests" &&
+                    {!isAdmin &&
+                      item.name === "Requests" &&
                       requestCount > 0 && (
                         <span
                           className="
@@ -1048,36 +1316,64 @@ const Navbar = () => {
               })}
             </nav>
 
-            {/* Secondary */}
+            {/* ==================================================
+                SECONDARY MOBILE MENU
+            ================================================== */}
 
             <div className="my-3 border-t border-slate-100" />
 
             <div className="space-y-1">
               {/* Settings */}
 
-              <Link
-                to="/settings"
-                onClick={() =>
-                  setMobileOpen(false)
-                }
-                className="
-                  flex
-                  items-center
-                  gap-3
-                  rounded-xl
-                  px-3
-                  py-3
-                  text-sm
-                  font-semibold
-                  text-slate-600
-                  transition
-                  hover:bg-slate-50
-                "
-              >
-                <Settings size={18} />
+              {!isAdmin && (
+                <Link
+                  to="/settings"
+                  onClick={handleNavigation}
+                  className="
+                    flex
+                    items-center
+                    gap-3
+                    rounded-xl
+                    px-3
+                    py-3
+                    text-sm
+                    font-semibold
+                    text-slate-600
+                    transition
+                    hover:bg-slate-50
+                  "
+                >
+                  <Settings size={18} />
 
-                Settings
-              </Link>
+                  Settings
+                </Link>
+              )}
+
+              {/* Admin Settings */}
+
+              {isAdmin && (
+                <Link
+                  to="/admin/settings"
+                  onClick={handleNavigation}
+                  className="
+                    flex
+                    items-center
+                    gap-3
+                    rounded-xl
+                    px-3
+                    py-3
+                    text-sm
+                    font-semibold
+                    text-slate-600
+                    transition
+                    hover:bg-slate-50
+                  "
+                >
+                  <Settings size={18} />
+
+                  Settings
+                </Link>
+              )}
 
               {/* Logout */}
 
