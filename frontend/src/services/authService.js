@@ -31,9 +31,7 @@ export const loginUser = async (credentials) => {
 // ============================================================
 
 export const getMyProfile = async () => {
-  const response = await api.get(
-    "/auth/me"
-  );
+  const response = await api.get("/auth/me");
 
   return response.data;
 };
@@ -56,9 +54,7 @@ export const updateProfile = async (formData) => {
 // ============================================================
 
 export const logoutUser = async () => {
-  const response = await api.post(
-    "/auth/logout"
-  );
+  const response = await api.post("/auth/logout");
 
   return response.data;
 };

@@ -51,12 +51,14 @@ const userSchema = new mongoose.Schema(
       default: "Beginner",
     },
 
-    availability: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
+     availability: {
+      type: String,
+      enum: [
+        "Available",
+        "Not Available"
+      ],
+      default: "Available",
+    },
 
     role: {
       type: String,

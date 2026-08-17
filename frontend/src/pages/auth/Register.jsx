@@ -40,25 +40,6 @@ const Register = () => {
 
   const gamesScrollRef = useRef(null);
 
-  const scrollGames = (direction) => {
-    const el = gamesScrollRef.current;
-
-    if (!el) {
-      return;
-    }
-
-    const cardWidth = 88; // card width (80px) + gap (~8px)
-    const amount = cardWidth * 3;
-
-    el.scrollBy({
-      left:
-        direction === "left"
-          ? -amount
-          : amount,
-      behavior: "smooth",
-    });
-  };
-
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -80,19 +61,15 @@ const Register = () => {
 
         const response = await getGames();
 
-        if (response.success) {
+        if (response?.success) {
           setGames(response.games || []);
         } else {
           toast.error(
-            response.message ||
-              "Unable to load games"
+            response?.message || "Unable to load games"
           );
         }
       } catch (error) {
-        console.error(
-          "Fetch games error:",
-          error
-        );
+        console.error("Fetch games error:", error);
 
         toast.error(
           error?.response?.data?.message ||
@@ -132,39 +109,26 @@ const Register = () => {
 
     // IMAGE TYPE
     if (!file.type.startsWith("image/")) {
-      toast.error(
-        "Please select an image file"
-      );
-
+      toast.error("Please select a valid image file");
       e.target.value = "";
       return;
     }
 
     // IMAGE SIZE
     if (file.size > 5 * 1024 * 1024) {
-      toast.error(
-        "Image must be less than 5MB"
-      );
-
+      toast.error("Image must be less than 5MB");
       e.target.value = "";
       return;
     }
 
     // CLEAN OLD PREVIEW
-    if (
-      preview &&
-      preview.startsWith("blob:")
-    ) {
+    if (preview?.startsWith("blob:")) {
       URL.revokeObjectURL(preview);
     }
 
-    // STORE IMAGE
+    const objectUrl = URL.createObjectURL(file);
+
     setImage(file);
-
-    // CREATE PREVIEW
-    const objectUrl =
-      URL.createObjectURL(file);
-
     setPreview(objectUrl);
   };
 
@@ -174,14 +138,28 @@ const Register = () => {
 
   useEffect(() => {
     return () => {
-      if (
-        preview &&
-        preview.startsWith("blob:")
-      ) {
+      if (preview?.startsWith("blob:")) {
         URL.revokeObjectURL(preview);
       }
     };
   }, [preview]);
+
+  // ==================================================
+  // GAME SCROLL
+  // ==================================================
+
+  const scrollGames = (direction) => {
+    const element = gamesScrollRef.current;
+
+    if (!element) {
+      return;
+    }
+
+    element.scrollBy({
+      left: direction === "left" ? -280 : 280,
+      behavior: "smooth",
+    });
+  };
 
   // ==================================================
   // GAME SELECTION
@@ -190,22 +168,15 @@ const Register = () => {
   const toggleGame = (gameId) => {
     setFormData((prev) => {
       const alreadySelected =
-        prev.preferredGames.includes(
-          gameId
-        );
+        prev.preferredGames.includes(gameId);
 
       return {
         ...prev,
-
-        preferredGames:
-          alreadySelected
-            ? prev.preferredGames.filter(
-                (id) => id !== gameId
-              )
-            : [
-                ...prev.preferredGames,
-                gameId,
-              ],
+        preferredGames: alreadySelected
+          ? prev.preferredGames.filter(
+              (id) => id !== gameId
+            )
+          : [...prev.preferredGames, gameId],
       };
     });
   };
@@ -217,40 +188,45 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log(
-      "REGISTER FORM DATA:",
-      formData
-    );
+    // --------------------------------------------------
+    // BASIC VALIDATION
+    // --------------------------------------------------
 
-    // PASSWORD
-    if (
-      formData.password !==
-      formData.confirmPassword
-    ) {
-      toast.error(
-        "Passwords do not match"
-      );
-
+    if (!formData.name.trim()) {
+      toast.error("Please enter your name");
       return;
     }
 
-    // PREFERRED GAMES
+    if (!formData.email.trim()) {
+      toast.error("Please enter your email");
+      return;
+    }
+
+    if (!formData.password) {
+      toast.error("Please enter your password");
+      return;
+    }
+
     if (
-      formData.preferredGames.length === 0
+      formData.password !== formData.confirmPassword
     ) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    if (formData.preferredGames.length === 0) {
       toast.error(
         "Please select at least one preferred game"
       );
-
       return;
     }
 
+    // --------------------------------------------------
+    // SUBMIT
+    // --------------------------------------------------
+
     try {
       setLoading(true);
-
-      // ==================================================
-      // CREATE FORMDATA
-      // ==================================================
 
       const payload = new FormData();
 
@@ -261,7 +237,7 @@ const Register = () => {
 
       payload.append(
         "email",
-        formData.email.trim()
+        formData.email.trim().toLowerCase()
       );
 
       payload.append(
@@ -281,65 +257,27 @@ const Register = () => {
 
       payload.append(
         "preferredGames",
-        JSON.stringify(
-          formData.preferredGames
-        )
+        JSON.stringify(formData.preferredGames)
       );
 
-      // ==================================================
+      // --------------------------------------------------
       // PROFILE IMAGE
-      // ==================================================
+      // --------------------------------------------------
 
       if (image instanceof File) {
-        payload.append(
-          "image",
-          image
-        );
+        payload.append("image", image);
       }
 
-      // ==================================================
-      // DEBUG
-      // ==================================================
+      // --------------------------------------------------
+      // API
+      // --------------------------------------------------
 
-      console.log(
-        "========== REGISTER REQUEST =========="
-      );
+      const response = await registerUser(payload);
 
-      for (
-        const [key, value] of
-        payload.entries()
-      ) {
-        if (value instanceof File) {
-          console.log(key, {
-            name: value.name,
-            type: value.type,
-            size: value.size,
-          });
-        } else {
-          console.log(
-            key,
-            value
-          );
-        }
-      }
-
-      // ==================================================
-      // API REQUEST
-      // ==================================================
-
-      const response =
-        await registerUser(payload);
-
-      // ==================================================
-      // RESPONSE
-      // ==================================================
-
-      if (!response.success) {
+      if (!response?.success) {
         toast.error(
-          response.message ||
-            "Registration failed"
+          response?.message || "Registration failed"
         );
-
         return;
       }
 
@@ -352,16 +290,6 @@ const Register = () => {
       console.error(
         "Registration error:",
         error
-      );
-
-      console.error(
-        "Status:",
-        error?.response?.status
-      );
-
-      console.error(
-        "Response:",
-        error?.response?.data
       );
 
       toast.error(
@@ -382,25 +310,38 @@ const Register = () => {
     <AuthLayout>
       <form
         onSubmit={handleSubmit}
-        className="space-y-8"
+        className="
+          w-full
+          space-y-6
+          overflow-visible
+        "
       >
         {/* ==================================================
             PROFILE IMAGE
         ================================================== */}
 
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
+          initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50/60 p-4"
+          transition={{ duration: 0.25 }}
+          className="
+            flex
+            items-center
+            gap-4
+            rounded-2xl
+            border
+            border-slate-100
+            bg-slate-50/70
+            p-3.5
+          "
         >
-          {/* IMAGE */}
+          {/* PROFILE IMAGE */}
 
           <div
             className="
               relative
-              h-20
-              w-20
+              h-[72px]
+              w-[72px]
               shrink-0
               overflow-hidden
               rounded-full
@@ -432,13 +373,11 @@ const Register = () => {
                 "
               >
                 <UserRound
-                  size={32}
+                  size={29}
                   className="text-slate-300"
                 />
               </div>
             )}
-
-            {/* CAMERA BUTTON */}
 
             <label
               className="
@@ -446,8 +385,8 @@ const Register = () => {
                 bottom-0
                 right-0
                 flex
-                h-7
-                w-7
+                h-6.5
+                w-6.5
                 cursor-pointer
                 items-center
                 justify-center
@@ -458,29 +397,27 @@ const Register = () => {
                 ring-2
                 ring-white
                 transition
-                hover:scale-105
                 hover:bg-[#0069A7]
+                hover:scale-105
               "
             >
-              <Camera size={14} />
+              <Camera size={13} />
 
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 className="hidden"
-                onChange={
-                  handleImageChange
-                }
+                onChange={handleImageChange}
                 disabled={loading}
               />
             </label>
           </div>
 
-          {/* DESCRIPTION */}
+          {/* TEXT */}
 
           <div className="min-w-0">
             <p className="text-sm font-semibold text-slate-800">
-              Add a profile photo
+              Profile photo
             </p>
 
             <p className="mt-0.5 text-xs text-slate-400">
@@ -488,10 +425,28 @@ const Register = () => {
             </p>
 
             {image && (
-              <p className="mt-1.5 inline-flex max-w-full items-center gap-1 truncate rounded-full bg-[#0078BD]/10 px-2 py-0.5 text-[11px] font-medium text-[#0078BD]">
-                <Check size={11} className="shrink-0" />
-                <span className="truncate">{image.name}</span>
-              </p>
+              <div
+                className="
+                  mt-1.5
+                  inline-flex
+                  max-w-full
+                  items-center
+                  gap-1
+                  rounded-full
+                  bg-[#0078BD]/10
+                  px-2
+                  py-0.5
+                  text-[10px]
+                  font-medium
+                  text-[#0078BD]
+                "
+              >
+                <Check size={10} />
+
+                <span className="max-w-[180px] truncate">
+                  {image.name}
+                </span>
+              </div>
             )}
           </div>
         </motion.div>
@@ -500,8 +455,8 @@ const Register = () => {
             ACCOUNT DETAILS
         ================================================== */}
 
-        <div className="space-y-4">
-          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <section className="space-y-3.5">
+          <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400">
             <UserRound size={13} />
             Account details
           </div>
@@ -523,7 +478,9 @@ const Register = () => {
             placeholder="you@example.com"
           />
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+            {/* LOCATION */}
+
             <div className="relative">
               <AuthInput
                 label="Location"
@@ -532,11 +489,20 @@ const Register = () => {
                 onChange={handleChange}
                 placeholder="Kolkata"
               />
+
               <MapPin
                 size={15}
-                className="pointer-events-none absolute right-3.5 top-[38px] text-slate-300"
+                className="
+                  pointer-events-none
+                  absolute
+                  right-3.5
+                  top-[38px]
+                  text-slate-300
+                "
               />
             </div>
+
+            {/* SKILL LEVEL */}
 
             <div className="space-y-2">
               <label
@@ -552,6 +518,7 @@ const Register = () => {
                   name="skillLevel"
                   value={formData.skillLevel}
                   onChange={handleChange}
+                  disabled={loading}
                   className="
                     h-11
                     w-full
@@ -569,6 +536,7 @@ const Register = () => {
                     focus:border-[#0078BD]
                     focus:ring-4
                     focus:ring-[#0078BD]/10
+                    disabled:bg-slate-50
                   "
                 >
                   <option value="Beginner">
@@ -586,24 +554,31 @@ const Register = () => {
 
                 <ChevronDown
                   size={15}
-                  className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                  className="
+                    pointer-events-none
+                    absolute
+                    right-3.5
+                    top-1/2
+                    -translate-y-1/2
+                    text-slate-400
+                  "
                 />
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* ==================================================
             SECURITY
         ================================================== */}
 
-        <div className="space-y-4">
-          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <section className="space-y-3.5">
+          <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400">
             <ShieldCheck size={13} />
             Security
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
             <AuthInput
               label="Password"
               name="password"
@@ -619,202 +594,302 @@ const Register = () => {
               type="password"
               value={formData.confirmPassword}
               onChange={handleChange}
-              placeholder="Confirm your password"
+              placeholder="Confirm password"
             />
           </div>
-        </div>
+        </section>
 
         {/* ==================================================
             PREFERRED GAMES
         ================================================== */}
 
-        <div className="space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <section className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400">
                 <Sparkles size={13} />
                 Preferred games
               </div>
 
               <p className="mt-1 text-xs text-slate-400">
-                Select the games you enjoy playing.
+                Choose the games you play.
               </p>
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
-              {formData.preferredGames.length > 0 && (
-                <span className="rounded-full bg-[#0078BD]/10 px-2.5 py-1 text-[11px] font-semibold text-[#0078BD]">
-                  {formData.preferredGames.length} selected
-                </span>
-              )}
-            </div>
+            {formData.preferredGames.length > 0 && (
+              <span
+                className="
+                  shrink-0
+                  rounded-full
+                  bg-[#0078BD]/10
+                  px-2.5
+                  py-1
+                  text-[10px]
+                  font-bold
+                  text-[#0078BD]
+                "
+              >
+                {formData.preferredGames.length} selected
+              </span>
+            )}
           </div>
 
+          {/* GAMES */}
+
           {gamesLoading ? (
-            <div className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-10 text-sm text-slate-400">
+            <div
+              className="
+                flex
+                h-[108px]
+                items-center
+                justify-center
+                gap-2
+                rounded-xl
+                border
+                border-slate-200
+                bg-white
+                text-xs
+                text-slate-400
+              "
+            >
               <Loader2
-                size={18}
+                size={17}
                 className="animate-spin text-[#0078BD]"
               />
+
               Loading games...
             </div>
           ) : games.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
-              <p className="text-sm text-slate-500">
+            <div
+              className="
+                rounded-xl
+                border
+                border-dashed
+                border-slate-300
+                bg-slate-50
+                p-5
+                text-center
+              "
+            >
+              <p className="text-xs text-slate-500">
                 No games available right now.
               </p>
             </div>
           ) : (
             <div className="relative">
+              {/* LEFT BUTTON */}
+
+              <button
+                type="button"
+                onClick={() =>
+                  scrollGames("left")
+                }
+                className="
+                  absolute
+                  -left-2
+                  top-1/2
+                  z-20
+                  flex
+                  h-7
+                  w-7
+                  -translate-y-1/2
+                  items-center
+                  justify-center
+                  rounded-full
+                  border
+                  border-slate-200
+                  bg-white
+                  text-slate-500
+                  shadow-md
+                  transition
+                  hover:border-[#0078BD]/50
+                  hover:text-[#0078BD]
+                  active:scale-95
+                "
+                aria-label="Previous games"
+              >
+                <ChevronLeft size={14} />
+              </button>
+
+              {/* GAME LIST */}
+
               <div
                 ref={gamesScrollRef}
                 className="
                   flex
-                  snap-x
-                  snap-mandatory
                   gap-2.5
                   overflow-x-auto
-                  scroll-px-1
                   px-1
-                  pb-2
+                  py-1
+                  scroll-smooth
                   [-ms-overflow-style:none]
                   [scrollbar-width:none]
                   [&::-webkit-scrollbar]:hidden
                 "
               >
-              {games.map((game, index) => {
-                const selected =
-                  formData.preferredGames.includes(
-                    game._id
-                  );
+                {games.map((game, index) => {
+                  const selected =
+                    formData.preferredGames.includes(
+                      game._id
+                    );
 
-                return (
-                  <motion.button
-                    key={game._id}
-                    type="button"
-                    initial={{ opacity: 0, x: 8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{
-                      duration: 0.25,
-                      delay: index * 0.04,
-                    }}
-                    whileTap={{ scale: 0.96 }}
-                    onClick={() =>
-                      toggleGame(
-                        game._id
-                      )
-                    }
-                    className={`
-                      group
-                      relative
-                      w-20
-                      shrink-0
-                      snap-start
-                      overflow-hidden
-                      rounded-lg
-                      border
-                      bg-white
-                      text-left
-                      shadow-sm
-                      transition-all
-                      duration-200
-                      ${
-                        selected
-                          ? "border-[#0078BD] ring-2 ring-[#0078BD]/15"
-                          : "border-slate-200 hover:border-[#0078BD]/50 hover:shadow-md"
+                  return (
+                    <motion.button
+                      key={game._id}
+                      type="button"
+                      initial={{
+                        opacity: 0,
+                        x: 8,
+                      }}
+                      animate={{
+                        opacity: 1,
+                        x: 0,
+                      }}
+                      transition={{
+                        duration: 0.2,
+                        delay: index * 0.03,
+                      }}
+                      whileTap={{
+                        scale: 0.96,
+                      }}
+                      onClick={() =>
+                        toggleGame(game._id)
                       }
-                    `}
-                  >
-                    <div className="aspect-square overflow-hidden bg-slate-100">
-                      <img
-                        src={game.image}
-                        alt={game.name}
-                        className="
-                          h-full
-                          w-full
-                          object-cover
-                          transition-transform
-                          duration-300
-                          group-hover:scale-105
-                        "
-                      />
+                      className={`
+                        group
+                        relative
+                        w-[76px]
+                        shrink-0
+                        overflow-hidden
+                        rounded-xl
+                        border
+                        bg-white
+                        text-left
+                        shadow-sm
+                        transition-all
+                        duration-200
+                        ${
+                          selected
+                            ? "border-[#0078BD] ring-2 ring-[#0078BD]/15"
+                            : "border-slate-200 hover:border-[#0078BD]/40 hover:shadow-md"
+                        }
+                      `}
+                    >
+                      {/* IMAGE */}
 
                       <div
-                        className={`
-                          absolute
-                          inset-0
-                          bg-gradient-to-t
-                          from-black/20
-                          to-transparent
-                          transition-opacity
-                          ${selected ? "opacity-100" : "opacity-0 group-hover:opacity-100"}
-                        `}
-                      />
-                    </div>
-
-                    <div className="px-1.5 py-1.5">
-                      <p className="truncate text-[11px] font-semibold leading-tight text-slate-800">
-                        {game.name}
-                      </p>
-
-                      <p className="mt-0.5 truncate text-[9px] leading-tight text-slate-400">
-                        {game.type}
-                      </p>
-                    </div>
-
-                    {selected && (
-                      <motion.div
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute right-1 top-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#0078BD] text-white shadow-md"
+                        className="
+                          aspect-square
+                          overflow-hidden
+                          bg-slate-100
+                        "
                       >
-                        <Check size={10} />
-                      </motion.div>
-                    )}
-                  </motion.button>
-                );
-              })}
+                        {game.image ? (
+                          <img
+                            src={game.image}
+                            alt={game.name}
+                            loading="lazy"
+                            className="
+                              h-full
+                              w-full
+                              object-cover
+                              transition-transform
+                              duration-300
+                              group-hover:scale-105
+                            "
+                          />
+                        ) : (
+                          <div
+                            className="
+                              flex
+                              h-full
+                              w-full
+                              items-center
+                              justify-center
+                              text-[10px]
+                              text-slate-300
+                            "
+                          >
+                            No image
+                          </div>
+                        )}
+                      </div>
+
+                      {/* GAME INFO */}
+
+                      <div className="px-1.5 py-1.5">
+                        <p
+                          className="
+                            truncate
+                            text-[10px]
+                            font-semibold
+                            leading-tight
+                            text-slate-800
+                          "
+                        >
+                          {game.name}
+                        </p>
+
+                        <p
+                          className="
+                            mt-0.5
+                            truncate
+                            text-[8px]
+                            leading-tight
+                            text-slate-400
+                          "
+                        >
+                          {game.type}
+                        </p>
+                      </div>
+
+                      {/* SELECTED */}
+
+                      {selected && (
+                        <motion.div
+                          initial={{
+                            scale: 0,
+                            opacity: 0,
+                          }}
+                          animate={{
+                            scale: 1,
+                            opacity: 1,
+                          }}
+                          className="
+                            absolute
+                            right-1
+                            top-1
+                            flex
+                            h-4
+                            w-4
+                            items-center
+                            justify-center
+                            rounded-full
+                            bg-[#0078BD]
+                            text-white
+                            shadow
+                          "
+                        >
+                          <Check size={9} />
+                        </motion.div>
+                      )}
+                    </motion.button>
+                  );
+                })}
               </div>
 
-              <button
-                type="button"
-                onClick={() => scrollGames("left")}
-                className="
-                  absolute
-                  -left-1
-                  top-1/2
-                  z-10
-                  flex
-                  h-7
-                  w-7
-                  -translate-y-1/2
-                  items-center
-                  justify-center
-                  rounded-full
-                  border
-                  border-slate-200
-                  bg-white
-                  text-slate-500
-                  shadow-md
-                  transition
-                  hover:border-[#0078BD]/50
-                  hover:text-[#0078BD]
-                  active:scale-95
-                "
-                aria-label="Scroll games left"
-              >
-                <ChevronLeft size={14} />
-              </button>
+              {/* RIGHT BUTTON */}
 
               <button
                 type="button"
-                onClick={() => scrollGames("right")}
+                onClick={() =>
+                  scrollGames("right")
+                }
                 className="
                   absolute
-                  -right-1
+                  -right-2
                   top-1/2
-                  z-10
+                  z-20
                   flex
                   h-7
                   w-7
@@ -832,13 +907,13 @@ const Register = () => {
                   hover:text-[#0078BD]
                   active:scale-95
                 "
-                aria-label="Scroll games right"
+                aria-label="Next games"
               >
                 <ChevronRight size={14} />
               </button>
             </div>
           )}
-        </div>
+        </section>
 
         {/* ==================================================
             SUBMIT
@@ -847,10 +922,7 @@ const Register = () => {
         <motion.button
           type="submit"
           whileTap={{ scale: 0.98 }}
-          disabled={
-            loading ||
-            gamesLoading
-          }
+          disabled={loading || gamesLoading}
           className="
             flex
             h-11
@@ -879,27 +951,31 @@ const Register = () => {
                 size={17}
                 className="animate-spin"
               />
-
               Creating account...
             </>
           ) : (
             <>
               <UserPlus size={17} />
-
               Create account
             </>
           )}
         </motion.button>
 
         {/* ==================================================
-            LOGIN LINK
+            LOGIN
         ================================================== */}
 
-        <p className="text-center text-sm text-slate-500">
+        <p className="pb-1 text-center text-sm text-slate-500">
           Already have an account?{" "}
           <Link
             to="/login"
-            className="font-semibold text-[#0078BD] hover:underline"
+            className="
+              font-semibold
+              text-[#0078BD]
+              transition
+              hover:text-[#0069A7]
+              hover:underline
+            "
           >
             Sign in
           </Link>
