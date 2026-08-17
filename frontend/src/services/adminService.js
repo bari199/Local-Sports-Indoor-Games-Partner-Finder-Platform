@@ -1,8 +1,8 @@
 import api from "./api";
 
-// ============================================================
-// ADMIN DASHBOARD
-// ============================================================
+/* ============================================================
+   ADMIN DASHBOARD
+============================================================ */
 
 export const getAdminDashboard = async () => {
   const response = await api.get("/admin/dashboard");
@@ -10,10 +10,9 @@ export const getAdminDashboard = async () => {
   return response.data;
 };
 
-
-// ============================================================
-// GET ALL USERS
-// ============================================================
+/* ============================================================
+   GET ALL USERS
+============================================================ */
 
 export const getAdminUsers = async () => {
   const response = await api.get("/admin/users");
@@ -21,10 +20,9 @@ export const getAdminUsers = async () => {
   return response.data;
 };
 
-
-// ============================================================
-// GET SINGLE USER
-// ============================================================
+/* ============================================================
+   GET SINGLE USER
+============================================================ */
 
 export const getAdminUserById = async (userId) => {
   const response = await api.get(
@@ -34,10 +32,9 @@ export const getAdminUserById = async (userId) => {
   return response.data;
 };
 
-
-// ============================================================
-// UPDATE USER ROLE
-// ============================================================
+/* ============================================================
+   UPDATE USER ROLE
+============================================================ */
 
 export const updateUserRole = async (
   userId,
@@ -51,10 +48,9 @@ export const updateUserRole = async (
   return response.data;
 };
 
-
-// ============================================================
-// DELETE USER
-// ============================================================
+/* ============================================================
+   DELETE USER
+============================================================ */
 
 export const deleteAdminUser = async (userId) => {
   const response = await api.delete(
@@ -64,10 +60,9 @@ export const deleteAdminUser = async (userId) => {
   return response.data;
 };
 
-
-// ============================================================
-// GET ALL GAMES
-// ============================================================
+/* ============================================================
+   GET ALL GAMES
+============================================================ */
 
 export const getAdminGames = async () => {
   const response = await api.get(
@@ -77,10 +72,9 @@ export const getAdminGames = async () => {
   return response.data;
 };
 
-
-// ============================================================
-// GET SINGLE GAME
-// ============================================================
+/* ============================================================
+   GET SINGLE GAME
+============================================================ */
 
 export const getAdminGameById = async (gameId) => {
   const response = await api.get(
@@ -90,10 +84,9 @@ export const getAdminGameById = async (gameId) => {
   return response.data;
 };
 
-
-// ============================================================
-// CREATE GAME
-// ============================================================
+/* ============================================================
+   CREATE GAME
+============================================================ */
 
 export const createAdminGame = async (gameData) => {
   const response = await api.post(
@@ -104,10 +97,9 @@ export const createAdminGame = async (gameData) => {
   return response.data;
 };
 
-
-// ============================================================
-// UPDATE GAME
-// ============================================================
+/* ============================================================
+   UPDATE GAME
+============================================================ */
 
 export const updateAdminGame = async (
   gameId,
@@ -121,10 +113,9 @@ export const updateAdminGame = async (
   return response.data;
 };
 
-
-// ============================================================
-// DELETE GAME
-// ============================================================
+/* ============================================================
+   DELETE GAME
+============================================================ */
 
 export const deleteAdminGame = async (gameId) => {
   const response = await api.delete(
@@ -134,12 +125,9 @@ export const deleteAdminGame = async (gameId) => {
   return response.data;
 };
 
-
-// ============================================================
-// PARTNER REQUEST MANAGEMENT
-// ============================================================
-
-// GET ALL PARTNER REQUESTS
+/* ============================================================
+   GET ALL PARTNER REQUESTS
+============================================================ */
 
 export const getAdminRequests = async () => {
   const response = await api.get(
@@ -149,8 +137,9 @@ export const getAdminRequests = async () => {
   return response.data;
 };
 
-
-// UPDATE PARTNER REQUEST STATUS
+/* ============================================================
+   UPDATE PARTNER REQUEST STATUS
+============================================================ */
 
 export const updateAdminRequestStatus = async (
   requestId,
@@ -166,8 +155,9 @@ export const updateAdminRequestStatus = async (
   return response.data;
 };
 
-
-// DELETE PARTNER REQUEST
+/* ============================================================
+   DELETE PARTNER REQUEST
+============================================================ */
 
 export const deleteAdminRequest = async (
   requestId

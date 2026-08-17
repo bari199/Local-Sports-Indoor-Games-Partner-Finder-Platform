@@ -2,13 +2,16 @@ import User from "../models/User.js";
 import Game from "../models/Game.js";
 import PartnerRequest from "../models/PartnerRequest.js";
 
-
 /* ============================================================
    ADMIN DASHBOARD
 ============================================================ */
 
 export const getAdminDashboard = async (req, res) => {
   try {
+    /* ========================================================
+       BASIC STATISTICS
+    ======================================================== */
+
     const [
       totalUsers,
       totalAdmins,
@@ -18,7 +21,9 @@ export const getAdminDashboard = async (req, res) => {
       acceptedRequests,
       rejectedRequests,
     ] = await Promise.all([
-      User.countDocuments(),
+      User.countDocuments({
+        role: "user",
+      }),
 
       User.countDocuments({
         role: "admin",
@@ -41,6 +46,317 @@ export const getAdminDashboard = async (req, res) => {
       }),
     ]);
 
+    /* ========================================================
+       USER GROWTH
+    ======================================================== */
+
+    const userGrowthRaw = await User.aggregate([
+      {
+        $match: {
+          role: "user",
+          createdAt: {
+            $exists: true,
+          },
+        },
+      },
+
+      {
+        $group: {
+          _id: {
+            year: {
+              $year: "$createdAt",
+            },
+
+            month: {
+              $month: "$createdAt",
+            },
+          },
+
+          users: {
+            $sum: 1,
+          },
+        },
+      },
+
+      {
+        $sort: {
+          "_id.year": 1,
+          "_id.month": 1,
+        },
+      },
+    ]);
+
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+    const userGrowth = userGrowthRaw.map(
+      (item) => ({
+        month:
+          monthNames[item._id.month - 1],
+
+        year: item._id.year,
+
+        users: item.users,
+      })
+    );
+
+    /* ========================================================
+       PARTNER REQUEST GROWTH
+    ======================================================== */
+
+    const requestGrowthRaw =
+      await PartnerRequest.aggregate([
+        {
+          $match: {
+            createdAt: {
+              $exists: true,
+            },
+          },
+        },
+
+        {
+          $group: {
+            _id: {
+              year: {
+                $year: "$createdAt",
+              },
+
+              month: {
+                $month: "$createdAt",
+              },
+            },
+
+            requests: {
+              $sum: 1,
+            },
+          },
+        },
+
+        {
+          $sort: {
+            "_id.year": 1,
+            "_id.month": 1,
+          },
+        },
+      ]);
+
+    const requestGrowth =
+      requestGrowthRaw.map(
+        (item) => ({
+          month:
+            monthNames[
+              item._id.month - 1
+            ],
+
+          year: item._id.year,
+
+          requests: item.requests,
+        })
+      );
+
+    /* ========================================================
+       REQUEST STATUS
+    ======================================================== */
+
+    const requestStatus = [
+      {
+        name: "Pending",
+        value: pendingRequests,
+      },
+
+      {
+        name: "Accepted",
+        value: acceptedRequests,
+      },
+
+      {
+        name: "Rejected",
+        value: rejectedRequests,
+      },
+    ];
+
+    /* ========================================================
+       GAME PREFERENCES
+    ======================================================== */
+
+    const gamePreferences =
+      await User.aggregate([
+        {
+          $match: {
+            role: "user",
+
+            preferredGames: {
+              $exists: true,
+
+              $ne: [],
+            },
+          },
+        },
+
+        {
+          $unwind: "$preferredGames",
+        },
+
+        {
+          $group: {
+            _id: "$preferredGames",
+
+            users: {
+              $sum: 1,
+            },
+          },
+        },
+
+        {
+          $lookup: {
+            from: "games",
+
+            localField: "_id",
+
+            foreignField: "_id",
+
+            as: "game",
+          },
+        },
+
+        {
+          $unwind: "$game",
+        },
+
+        {
+          $project: {
+            _id: 0,
+
+            name: "$game.name",
+
+            users: 1,
+
+            value: "$users",
+          },
+        },
+
+        {
+          $sort: {
+            users: -1,
+          },
+        },
+
+        {
+          $limit: 8,
+        },
+      ]);
+
+    /* ========================================================
+       REQUESTS BY GAME
+    ======================================================== */
+
+    const requestsByGame =
+      await PartnerRequest.aggregate([
+        {
+          $group: {
+            _id: "$game",
+
+            requests: {
+              $sum: 1,
+            },
+          },
+        },
+
+        {
+          $lookup: {
+            from: "games",
+
+            localField: "_id",
+
+            foreignField: "_id",
+
+            as: "game",
+          },
+        },
+
+        {
+          $unwind: "$game",
+        },
+
+        {
+          $project: {
+            _id: 0,
+
+            name: "$game.name",
+
+            requests: 1,
+
+            value: "$requests",
+          },
+        },
+
+        {
+          $sort: {
+            requests: -1,
+          },
+        },
+
+        {
+          $limit: 8,
+        },
+      ]);
+
+    /* ========================================================
+       RECENT USERS
+    ======================================================== */
+
+    const recentUsers = await User.find({
+      role: "user",
+    })
+      .select(
+        "name email image location skillLevel role createdAt"
+      )
+      .sort({
+        createdAt: -1,
+      })
+      .limit(5)
+      .lean();
+
+    /* ========================================================
+       RECENT REQUESTS
+    ======================================================== */
+
+    const recentRequests =
+      await PartnerRequest.find()
+        .populate(
+          "sender",
+          "name image"
+        )
+        .populate(
+          "receiver",
+          "name image"
+        )
+        .populate(
+          "game",
+          "name image"
+        )
+        .sort({
+          createdAt: -1,
+        })
+        .limit(5)
+        .lean();
+
+    /* ========================================================
+       FINAL RESPONSE
+    ======================================================== */
+
     return res.status(200).json({
       success: true,
 
@@ -53,18 +369,34 @@ export const getAdminDashboard = async (req, res) => {
         acceptedRequests,
         rejectedRequests,
       },
+
+      analytics: {
+        userGrowth,
+        requestGrowth,
+        requestStatus,
+        gamePreferences,
+        requestsByGame,
+      },
+
+      recent: {
+        users: recentUsers,
+        requests: recentRequests,
+      },
     });
   } catch (error) {
-    console.error("Get admin dashboard error:", error);
+    console.error(
+      "Get admin dashboard error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
-      message: "Server error while fetching admin dashboard",
+
+      message:
+        "Server error while fetching admin dashboard",
     });
   }
 };
-
-
 /* ============================================================
    GET ALL USERS
 ============================================================ */
@@ -82,15 +414,18 @@ export const getAdminUsers = async (req, res) => {
       users,
     });
   } catch (error) {
-    console.error("Get admin users error:", error);
+    console.error(
+      "Get admin users error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
-      message: "Server error while fetching users",
+      message:
+        "Server error while fetching users",
     });
   }
 };
-
 
 /* ============================================================
    GET SINGLE USER
@@ -98,7 +433,9 @@ export const getAdminUsers = async (req, res) => {
 
 export const getAdminUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id)
+    const user = await User.findById(
+      req.params.id
+    )
       .select("-password")
       .populate("preferredGames", "name");
 
@@ -114,15 +451,18 @@ export const getAdminUserById = async (req, res) => {
       user,
     });
   } catch (error) {
-    console.error("Get admin user error:", error);
+    console.error(
+      "Get admin user error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
-      message: "Server error while fetching user",
+      message:
+        "Server error while fetching user",
     });
   }
 };
-
 
 /* ============================================================
    CHANGE USER ROLE
@@ -139,7 +479,9 @@ export const updateUserRole = async (req, res) => {
       });
     }
 
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(
+      req.params.id
+    );
 
     if (!user) {
       return res.status(404).json({
@@ -154,7 +496,10 @@ export const updateUserRole = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "User role updated successfully",
+
+      message:
+        "User role updated successfully",
+
       user: {
         id: user._id,
         name: user.name,
@@ -163,15 +508,18 @@ export const updateUserRole = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Update user role error:", error);
+    console.error(
+      "Update user role error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
-      message: "Server error while updating user role",
+      message:
+        "Server error while updating user role",
     });
   }
 };
-
 
 /* ============================================================
    DELETE USER
@@ -179,7 +527,9 @@ export const updateUserRole = async (req, res) => {
 
 export const deleteAdminUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(
+      req.params.id
+    );
 
     if (!user) {
       return res.status(404).json({
@@ -188,26 +538,35 @@ export const deleteAdminUser = async (req, res) => {
       });
     }
 
-    // Prevent admin from deleting their own account
-    if (user._id.toString() === req.user._id.toString()) {
+    if (
+      user._id.toString() ===
+      req.user._id.toString()
+    ) {
       return res.status(400).json({
         success: false,
-        message: "You cannot delete your own admin account",
+        message:
+          "You cannot delete your own admin account",
       });
     }
 
-    await User.findByIdAndDelete(req.params.id);
+    await User.findByIdAndDelete(
+      req.params.id
+    );
 
     return res.status(200).json({
       success: true,
       message: "User deleted successfully",
     });
   } catch (error) {
-    console.error("Delete admin user error:", error);
+    console.error(
+      "Delete admin user error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
-      message: "Server error while deleting user",
+      message:
+        "Server error while deleting user",
     });
   }
 };
@@ -216,11 +575,20 @@ export const deleteAdminUser = async (req, res) => {
    GET ALL PARTNER REQUESTS
 ============================================================ */
 
-export const getAdminRequests = async (req, res) => {
+export const getAdminRequests = async (
+  req,
+  res
+) => {
   try {
     const requests = await PartnerRequest.find()
-      .populate("sender", "name email profileImage")
-      .populate("receiver", "name email profileImage")
+      .populate(
+        "sender",
+        "name email profileImage"
+      )
+      .populate(
+        "receiver",
+        "name email profileImage"
+      )
       .sort({ createdAt: -1 });
 
     return res.status(200).json({
@@ -229,21 +597,27 @@ export const getAdminRequests = async (req, res) => {
       requests,
     });
   } catch (error) {
-    console.error("Get admin requests error:", error);
+    console.error(
+      "Get admin requests error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
-      message: "Server error while fetching requests",
+      message:
+        "Server error while fetching requests",
     });
   }
 };
-
 
 /* ============================================================
    UPDATE REQUEST STATUS
 ============================================================ */
 
-export const updateAdminRequestStatus = async (req, res) => {
+export const updateAdminRequestStatus = async (
+  req,
+  res
+) => {
   try {
     const { status } = req.body;
 
@@ -260,14 +634,16 @@ export const updateAdminRequestStatus = async (req, res) => {
       });
     }
 
-    const request = await PartnerRequest.findById(
-      req.params.id
-    );
+    const request =
+      await PartnerRequest.findById(
+        req.params.id
+      );
 
     if (!request) {
       return res.status(404).json({
         success: false,
-        message: "Partner request not found",
+        message:
+          "Partner request not found",
       });
     }
 
@@ -276,7 +652,9 @@ export const updateAdminRequestStatus = async (req, res) => {
     await request.save();
 
     const updatedRequest =
-      await PartnerRequest.findById(request._id)
+      await PartnerRequest.findById(
+        request._id
+      )
         .populate(
           "sender",
           "name email profileImage"
@@ -288,7 +666,8 @@ export const updateAdminRequestStatus = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Request status updated successfully",
+      message:
+        "Request status updated successfully",
       request: updatedRequest,
     });
   } catch (error) {
@@ -305,21 +684,25 @@ export const updateAdminRequestStatus = async (req, res) => {
   }
 };
 
-
 /* ============================================================
    DELETE PARTNER REQUEST
 ============================================================ */
 
-export const deleteAdminRequest = async (req, res) => {
+export const deleteAdminRequest = async (
+  req,
+  res
+) => {
   try {
-    const request = await PartnerRequest.findById(
-      req.params.id
-    );
+    const request =
+      await PartnerRequest.findById(
+        req.params.id
+      );
 
     if (!request) {
       return res.status(404).json({
         success: false,
-        message: "Partner request not found",
+        message:
+          "Partner request not found",
       });
     }
 
@@ -329,7 +712,8 @@ export const deleteAdminRequest = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Partner request deleted successfully",
+      message:
+        "Partner request deleted successfully",
     });
   } catch (error) {
     console.error(
@@ -349,10 +733,14 @@ export const deleteAdminRequest = async (req, res) => {
    GET ALL GAMES
 ============================================================ */
 
-export const getAdminGames = async (req, res) => {
+export const getAdminGames = async (
+  req,
+  res
+) => {
   try {
-    const games = await Game.find()
-      .sort({ createdAt: -1 });
+    const games = await Game.find().sort({
+      createdAt: -1,
+    });
 
     return res.status(200).json({
       success: true,
@@ -367,17 +755,20 @@ export const getAdminGames = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Server error while fetching games",
+      message:
+        "Server error while fetching games",
     });
   }
 };
-
 
 /* ============================================================
    GET SINGLE GAME
 ============================================================ */
 
-export const getAdminGameById = async (req, res) => {
+export const getAdminGameById = async (
+  req,
+  res
+) => {
   try {
     const game = await Game.findById(
       req.params.id
@@ -402,17 +793,20 @@ export const getAdminGameById = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Server error while fetching game",
+      message:
+        "Server error while fetching game",
     });
   }
 };
-
 
 /* ============================================================
    CREATE GAME
 ============================================================ */
 
-export const createAdminGame = async (req, res) => {
+export const createAdminGame = async (
+  req,
+  res
+) => {
   try {
     const {
       name,
@@ -422,27 +816,21 @@ export const createAdminGame = async (req, res) => {
       isActive,
     } = req.body;
 
-    /* --------------------------------------------------------
-       Required field
-    -------------------------------------------------------- */
-
     if (!name || !type) {
       return res.status(400).json({
         success: false,
-        message: "Game name and type are required",
+        message:
+          "Game name and type are required",
       });
     }
 
-    /* --------------------------------------------------------
-       Check duplicate game
-    -------------------------------------------------------- */
-
-    const existingGame = await Game.findOne({
-      name: {
-        $regex: `^${name.trim()}$`,
-        $options: "i",
-      },
-    });
+    const existingGame =
+      await Game.findOne({
+        name: {
+          $regex: `^${name.trim()}$`,
+          $options: "i",
+        },
+      });
 
     if (existingGame) {
       return res.status(409).json({
@@ -451,14 +839,11 @@ export const createAdminGame = async (req, res) => {
       });
     }
 
-    /* --------------------------------------------------------
-       Create game
-    -------------------------------------------------------- */
-
     const game = await Game.create({
       name: name.trim(),
       type: type.trim(),
-      description: description?.trim() || "",
+      description:
+        description?.trim() || "",
       image: image || "",
       isActive:
         typeof isActive === "boolean"
@@ -468,7 +853,8 @@ export const createAdminGame = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: "Game created successfully",
+      message:
+        "Game created successfully",
       game,
     });
   } catch (error) {
@@ -479,17 +865,20 @@ export const createAdminGame = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Server error while creating game",
+      message:
+        "Server error while creating game",
     });
   }
 };
-
 
 /* ============================================================
    UPDATE GAME
 ============================================================ */
 
-export const updateAdminGame = async (req, res) => {
+export const updateAdminGame = async (
+  req,
+  res
+) => {
   try {
     const {
       name,
@@ -509,10 +898,6 @@ export const updateAdminGame = async (req, res) => {
         message: "Game not found",
       });
     }
-
-    /* --------------------------------------------------------
-       Update only supplied fields
-    -------------------------------------------------------- */
 
     if (name !== undefined) {
       game.name = name.trim();
@@ -539,7 +924,8 @@ export const updateAdminGame = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Game updated successfully",
+      message:
+        "Game updated successfully",
       game,
     });
   } catch (error) {
@@ -550,17 +936,20 @@ export const updateAdminGame = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Server error while updating game",
+      message:
+        "Server error while updating game",
     });
   }
 };
-
 
 /* ============================================================
    DELETE GAME
 ============================================================ */
 
-export const deleteAdminGame = async (req, res) => {
+export const deleteAdminGame = async (
+  req,
+  res
+) => {
   try {
     const game = await Game.findById(
       req.params.id
@@ -579,7 +968,8 @@ export const deleteAdminGame = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Game deleted successfully",
+      message:
+        "Game deleted successfully",
     });
   } catch (error) {
     console.error(
@@ -589,7 +979,8 @@ export const deleteAdminGame = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Server error while deleting game",
+      message:
+        "Server error while deleting game",
     });
   }
 };
