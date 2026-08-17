@@ -1,0 +1,4739 @@
+Readme.md
+
+Images screenshout links=>
+Landing-page-> url => https://res.cloudinary.com/diqr1juvf/image/upload/v1786983791/Landing-page_nvautz.png
+
+Authentications => Register url =>https://res.cloudinary.com/diqr1juvf/image/upload/v1786983704/register-page_yiebop.png
+Login url =>https://res.cloudinary.com/diqr1juvf/image/upload/v1786983702/Login-page_bn2smb.png
+
+user=> Dashboard => https://res.cloudinary.com/diqr1juvf/image/upload/v1786984132/dashboard_aurj4h.png
+       user-players=>https://res.cloudinary.com/diqr1juvf/image/upload/v1786985609/user-players_hf17n2.png
+       user-player-details=>https://res.cloudinary.com/diqr1juvf/image/upload/v1786985607/user-player-profile_hfzcic.png
+       user-games=>https://res.cloudinary.com/diqr1juvf/image/upload/v1786985607/user-player-profile_hfzcic.png
+       user-games-players=>https://res.cloudinary.com/diqr1juvf/image/upload/v1786985535/game-players_k9tdl2.png
+       user-profile=>https://res.cloudinary.com/diqr1juvf/image/upload/v1786985548/user-profile_u7m6ne.png
+       user-request=>https://res.cloudinary.com/diqr1juvf/image/upload/v1786985530/user-request_partner_zkuf0w.png
+
+Admin=>Admin-Dashboard=>https://res.cloudinary.com/diqr1juvf/image/upload/v1786985684/Admin-dasboard_qzsoxw.png
+	Admin-users=>https://res.cloudinary.com/diqr1juvf/image/upload/v1786985694/user-admin-table_jjayzh.png
+	Admin-games=>https://res.cloudinary.com/diqr1juvf/image/upload/v1786985701/admin-games_q3edue.png
+	Admin-partner-request=>https://res.cloudinary.com/diqr1juvf/image/upload/v1786985684/admin-request-partner_xs4lnr.png
+
+
+Folder structure=>
+Backend-/
+	config-/
+		cloudinary.js
+		db.js
+	controllers-/
+		adminController.js
+		authController.js
+		gameController.js
+		partnerRequestController.js
+		playerController.js
+	middleware-/
+		adminMiddleware.js
+		authMiddleware.js
+		gameUploadMiddleware.js
+		uploadMiddleware.js
+	models-/
+		Game.js
+		PartnerRequest.js
+		User.js
+	routes-/
+		adminRoutes.js
+		authRoutes.js
+		gameRoutes.js
+		partnerRequestRoutes.js
+		playerRoutes.js
+	seeds-/
+		adminSeed.js
+		gameSeed.js
+	utils-/
+		generateToken.js
+	.env-/
+	.gitignore
+	package.json
+	server.js
+
+frontend-/
+        public-/
+        src-/
+            assets-/
+            components-/
+                admin-/
+                    AdminHeader.jsx 
+                    AdminSidebar.jsx
+                auth-/
+                    AuthInput.jsx
+                    AuthLayout.jsx
+                common-/
+                    Footer.jsx  
+                    GiftBanner.jsx  
+                    Navbar.jsx
+                games-/
+                    GamesCard.jsx
+                landing-/
+                    AboutTeam.jsx   
+                    AppDownload.jsx 
+                    Blogs.jsx   
+                    BookVenues.jsx  
+                    DiscoverGames.jsx   
+                    FAQ.jsx
+                    GiftStrip.jsx
+                    HeroSection.jsx
+                    PopularSports.jsx
+                    Spotlight.jsx
+                    TopCities.jsx
+                layout-/
+                    MainLayout.jsx
+                    Navbar.jsx
+                players-/
+                    PlayerCard.jsx
+                    PlayerSkeleton.jsx
+                ui-/
+            context-/
+                    AuthContext.jsx
+            data-/
+                    mockdata.js
+            hooks-/
+                    useAuth.js
+            lib-/
+                    utils.js
+            pages-/
+                    admin-/
+                        AdminDashboard.jsx
+                        AdminGames.jsx
+                        AdminLayout.jsx
+                        AdminRequest.jsx
+                        AdminUsers.jsx
+                    auth-/
+                        AdminRoute.jsx
+                        Login.jsx
+                        ProtectedRoute.jsx
+                        Register.jsx
+                    dashboard-/
+                        Dashboard.jsx
+                    games-/
+                        GameDetails.jsx
+                        Game.jsx
+                    home-/
+                        Landing.jsx
+                    players-/
+                        PlayerProfile.jsx
+                        Players.jsx
+                    profile-/
+                        EditProfile.jsx
+                        Profile.jsx
+                    request-/
+                        Request.jsx
+            services-/
+                    adminService.js
+                    api.js
+                    authService.js
+                    gameService.js
+                    PartnerRequestService.js
+                    playerService.js
+                    requestService.js
+            App.jsx
+            index.css
+            main.jsx
+        .env
+        .gitignore
+        components.json
+        eslint.config.js
+        index.html
+        jsconfig.json
+        package.json
+        README.md
+        vercel.json
+        vite.config.js
+
+
+//----------------------------------Source code--------------------------------------------//
+
+Backend-/
+
+import { v2 as cloudinary } from "cloudinary";
+
+console.log("========== CLOUDINARY CHECK ==========");
+console.log(
+  "CLOUD NAME:",
+  process.env.CLOUDINARY_CLOUD_NAME
+);
+console.log(
+  "API KEY:",
+  process.env.CLOUDINARY_API_KEY
+    ? "LOADED"
+    : "MISSING"
+);
+console.log(
+  "API SECRET:",
+  process.env.CLOUDINARY_API_SECRET
+    ? "LOADED"
+    : "MISSING"
+);
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+export default cloudinary;
+
+import mongoose from "mongoose";
+
+const connectDB = async () => {
+  try {
+    const connection = await mongoose.connect(`${process.env.MONGODB_URI}/Sports`);
+
+    console.log(`MongoDB connected: ${connection.connection.host}`);
+  } catch (error) {
+    console.error("MongoDB connection failed:", error.message);
+    process.exit(1);
+  }
+};
+
+export default connectDB;
+
+import User from "../models/User.js";
+import Game from "../models/Game.js";
+import PartnerRequest from "../models/PartnerRequest.js";
+
+/* ============================================================
+   ADMIN DASHBOARD
+============================================================ */
+
+export const getAdminDashboard = async (req, res) => {
+  try {
+    /* ========================================================
+       BASIC STATISTICS
+    ======================================================== */
+
+    const [
+      totalUsers,
+      totalAdmins,
+      totalGames,
+      totalRequests,
+      pendingRequests,
+      acceptedRequests,
+      rejectedRequests,
+    ] = await Promise.all([
+      User.countDocuments({
+        role: "user",
+      }),
+
+      User.countDocuments({
+        role: "admin",
+      }),
+
+      Game.countDocuments(),
+
+      PartnerRequest.countDocuments(),
+
+      PartnerRequest.countDocuments({
+        status: "pending",
+      }),
+
+      PartnerRequest.countDocuments({
+        status: "accepted",
+      }),
+
+      PartnerRequest.countDocuments({
+        status: "rejected",
+      }),
+    ]);
+
+    /* ========================================================
+       USER GROWTH
+    ======================================================== */
+
+    const userGrowthRaw = await User.aggregate([
+      {
+        $match: {
+          role: "user",
+          createdAt: {
+            $exists: true,
+          },
+        },
+      },
+
+      {
+        $group: {
+          _id: {
+            year: {
+              $year: "$createdAt",
+            },
+
+            month: {
+              $month: "$createdAt",
+            },
+          },
+
+          users: {
+            $sum: 1,
+          },
+        },
+      },
+
+      {
+        $sort: {
+          "_id.year": 1,
+          "_id.month": 1,
+        },
+      },
+    ]);
+
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+    const userGrowth = userGrowthRaw.map(
+      (item) => ({
+        month:
+          monthNames[item._id.month - 1],
+
+        year: item._id.year,
+
+        users: item.users,
+      })
+    );
+
+    /* ========================================================
+       PARTNER REQUEST GROWTH
+    ======================================================== */
+
+    const requestGrowthRaw =
+      await PartnerRequest.aggregate([
+        {
+          $match: {
+            createdAt: {
+              $exists: true,
+            },
+          },
+        },
+
+        {
+          $group: {
+            _id: {
+              year: {
+                $year: "$createdAt",
+              },
+
+              month: {
+                $month: "$createdAt",
+              },
+            },
+
+            requests: {
+              $sum: 1,
+            },
+          },
+        },
+
+        {
+          $sort: {
+            "_id.year": 1,
+            "_id.month": 1,
+          },
+        },
+      ]);
+
+    const requestGrowth =
+      requestGrowthRaw.map(
+        (item) => ({
+          month:
+            monthNames[
+              item._id.month - 1
+            ],
+
+          year: item._id.year,
+
+          requests: item.requests,
+        })
+      );
+
+    /* ========================================================
+       REQUEST STATUS
+    ======================================================== */
+
+    const requestStatus = [
+      {
+        name: "Pending",
+        value: pendingRequests,
+      },
+
+      {
+        name: "Accepted",
+        value: acceptedRequests,
+      },
+
+      {
+        name: "Rejected",
+        value: rejectedRequests,
+      },
+    ];
+
+    /* ========================================================
+       GAME PREFERENCES
+    ======================================================== */
+
+    const gamePreferences =
+      await User.aggregate([
+        {
+          $match: {
+            role: "user",
+
+            preferredGames: {
+              $exists: true,
+
+              $ne: [],
+            },
+          },
+        },
+
+        {
+          $unwind: "$preferredGames",
+        },
+
+        {
+          $group: {
+            _id: "$preferredGames",
+
+            users: {
+              $sum: 1,
+            },
+          },
+        },
+
+        {
+          $lookup: {
+            from: "games",
+
+            localField: "_id",
+
+            foreignField: "_id",
+
+            as: "game",
+          },
+        },
+
+        {
+          $unwind: "$game",
+        },
+
+        {
+          $project: {
+            _id: 0,
+
+            name: "$game.name",
+
+            users: 1,
+
+            value: "$users",
+          },
+        },
+
+        {
+          $sort: {
+            users: -1,
+          },
+        },
+
+        {
+          $limit: 8,
+        },
+      ]);
+
+    /* ========================================================
+       REQUESTS BY GAME
+    ======================================================== */
+
+    const requestsByGame =
+      await PartnerRequest.aggregate([
+        {
+          $group: {
+            _id: "$game",
+
+            requests: {
+              $sum: 1,
+            },
+          },
+        },
+
+        {
+          $lookup: {
+            from: "games",
+
+            localField: "_id",
+
+            foreignField: "_id",
+
+            as: "game",
+          },
+        },
+
+        {
+          $unwind: "$game",
+        },
+
+        {
+          $project: {
+            _id: 0,
+
+            name: "$game.name",
+
+            requests: 1,
+
+            value: "$requests",
+          },
+        },
+
+        {
+          $sort: {
+            requests: -1,
+          },
+        },
+
+        {
+          $limit: 8,
+        },
+      ]);
+
+    /* ========================================================
+       RECENT USERS
+    ======================================================== */
+
+    const recentUsers = await User.find({
+      role: "user",
+    })
+      .select(
+        "name email image location skillLevel role createdAt"
+      )
+      .sort({
+        createdAt: -1,
+      })
+      .limit(5)
+      .lean();
+
+    /* ========================================================
+       RECENT REQUESTS
+    ======================================================== */
+
+    const recentRequests =
+      await PartnerRequest.find()
+        .populate(
+          "sender",
+          "name image"
+        )
+        .populate(
+          "receiver",
+          "name image"
+        )
+        .populate(
+          "game",
+          "name image"
+        )
+        .sort({
+          createdAt: -1,
+        })
+        .limit(5)
+        .lean();
+
+    /* ========================================================
+       FINAL RESPONSE
+    ======================================================== */
+
+    return res.status(200).json({
+      success: true,
+
+      stats: {
+        totalUsers,
+        totalAdmins,
+        totalGames,
+        totalRequests,
+        pendingRequests,
+        acceptedRequests,
+        rejectedRequests,
+      },
+
+      analytics: {
+        userGrowth,
+        requestGrowth,
+        requestStatus,
+        gamePreferences,
+        requestsByGame,
+      },
+
+      recent: {
+        users: recentUsers,
+        requests: recentRequests,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Get admin dashboard error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+
+      message:
+        "Server error while fetching admin dashboard",
+    });
+  }
+};
+/* ============================================================
+   GET ALL USERS
+============================================================ */
+
+export const getAdminUsers = async (req, res) => {
+  try {
+    const users = await User.find()
+      .select("-password")
+      .populate("preferredGames", "name")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: users.length,
+      users,
+    });
+  } catch (error) {
+    console.error(
+      "Get admin users error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Server error while fetching users",
+    });
+  }
+};
+
+/* ============================================================
+   GET SINGLE USER
+============================================================ */
+
+export const getAdminUserById = async (req, res) => {
+  try {
+    const user = await User.findById(
+      req.params.id
+    )
+      .select("-password")
+      .populate("preferredGames", "name");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    console.error(
+      "Get admin user error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Server error while fetching user",
+    });
+  }
+};
+
+/* ============================================================
+   CHANGE USER ROLE
+============================================================ */
+
+export const updateUserRole = async (req, res) => {
+  try {
+    const { role } = req.body;
+
+    if (!["user", "admin"].includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid role",
+      });
+    }
+
+    const user = await User.findById(
+      req.params.id
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    user.role = role;
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+
+      message:
+        "User role updated successfully",
+
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Update user role error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Server error while updating user role",
+    });
+  }
+};
+
+/* ============================================================
+   DELETE USER
+============================================================ */
+
+export const deleteAdminUser = async (req, res) => {
+  try {
+    const user = await User.findById(
+      req.params.id
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (
+      user._id.toString() ===
+      req.user._id.toString()
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "You cannot delete your own admin account",
+      });
+    }
+
+    await User.findByIdAndDelete(
+      req.params.id
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
+    });
+  } catch (error) {
+    console.error(
+      "Delete admin user error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Server error while deleting user",
+    });
+  }
+};
+
+/* ============================================================
+   GET ALL PARTNER REQUESTS
+============================================================ */
+
+export const getAdminRequests = async (
+  req,
+  res
+) => {
+  try {
+    const requests = await PartnerRequest.find()
+      .populate(
+        "sender",
+        "name email profileImage"
+      )
+      .populate(
+        "receiver",
+        "name email profileImage"
+      )
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: requests.length,
+      requests,
+    });
+  } catch (error) {
+    console.error(
+      "Get admin requests error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Server error while fetching requests",
+    });
+  }
+};
+
+/* ============================================================
+   UPDATE REQUEST STATUS
+============================================================ */
+
+export const updateAdminRequestStatus = async (
+  req,
+  res
+) => {
+  try {
+    const { status } = req.body;
+
+    const allowedStatuses = [
+      "pending",
+      "accepted",
+      "rejected",
+    ];
+
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid request status",
+      });
+    }
+
+    const request =
+      await PartnerRequest.findById(
+        req.params.id
+      );
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Partner request not found",
+      });
+    }
+
+    request.status = status;
+
+    await request.save();
+
+    const updatedRequest =
+      await PartnerRequest.findById(
+        request._id
+      )
+        .populate(
+          "sender",
+          "name email profileImage"
+        )
+        .populate(
+          "receiver",
+          "name email profileImage"
+        );
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "Request status updated successfully",
+      request: updatedRequest,
+    });
+  } catch (error) {
+    console.error(
+      "Update admin request status error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Server error while updating request status",
+    });
+  }
+};
+
+/* ============================================================
+   DELETE PARTNER REQUEST
+============================================================ */
+
+export const deleteAdminRequest = async (
+  req,
+  res
+) => {
+  try {
+    const request =
+      await PartnerRequest.findById(
+        req.params.id
+      );
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Partner request not found",
+      });
+    }
+
+    await PartnerRequest.findByIdAndDelete(
+      req.params.id
+    );
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "Partner request deleted successfully",
+    });
+  } catch (error) {
+    console.error(
+      "Delete admin request error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Server error while deleting request",
+    });
+  }
+};
+
+/* ============================================================
+   GET ALL GAMES
+============================================================ */
+
+export const getAdminGames = async (
+  req,
+  res
+) => {
+  try {
+    const games = await Game.find().sort({
+      createdAt: -1,
+    });
+
+    return res.status(200).json({
+      success: true,
+      count: games.length,
+      games,
+    });
+  } catch (error) {
+    console.error(
+      "Get admin games error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Server error while fetching games",
+    });
+  }
+};
+
+/* ============================================================
+   GET SINGLE GAME
+============================================================ */
+
+export const getAdminGameById = async (
+  req,
+  res
+) => {
+  try {
+    const game = await Game.findById(
+      req.params.id
+    );
+
+    if (!game) {
+      return res.status(404).json({
+        success: false,
+        message: "Game not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      game,
+    });
+  } catch (error) {
+    console.error(
+      "Get admin game error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Server error while fetching game",
+    });
+  }
+};
+
+/* ============================================================
+   CREATE GAME
+============================================================ */
+
+export const createAdminGame = async (
+  req,
+  res
+) => {
+  try {
+    const {
+      name,
+      type,
+      description,
+      image,
+      isActive,
+    } = req.body;
+
+    if (!name || !type) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Game name and type are required",
+      });
+    }
+
+    const existingGame =
+      await Game.findOne({
+        name: {
+          $regex: `^${name.trim()}$`,
+          $options: "i",
+        },
+      });
+
+    if (existingGame) {
+      return res.status(409).json({
+        success: false,
+        message: "Game already exists",
+      });
+    }
+
+    const game = await Game.create({
+      name: name.trim(),
+      type: type.trim(),
+      description:
+        description?.trim() || "",
+      image: image || "",
+      isActive:
+        typeof isActive === "boolean"
+          ? isActive
+          : true,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message:
+        "Game created successfully",
+      game,
+    });
+  } catch (error) {
+    console.error(
+      "Create admin game error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Server error while creating game",
+    });
+  }
+};
+
+/* ============================================================
+   UPDATE GAME
+============================================================ */
+
+export const updateAdminGame = async (
+  req,
+  res
+) => {
+  try {
+    const {
+      name,
+      type,
+      description,
+      image,
+      isActive,
+    } = req.body;
+
+    const game = await Game.findById(
+      req.params.id
+    );
+
+    if (!game) {
+      return res.status(404).json({
+        success: false,
+        message: "Game not found",
+      });
+    }
+
+    if (name !== undefined) {
+      game.name = name.trim();
+    }
+
+    if (type !== undefined) {
+      game.type = type.trim();
+    }
+
+    if (description !== undefined) {
+      game.description =
+        description.trim();
+    }
+
+    if (image !== undefined) {
+      game.image = image;
+    }
+
+    if (isActive !== undefined) {
+      game.isActive = isActive;
+    }
+
+    await game.save();
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "Game updated successfully",
+      game,
+    });
+  } catch (error) {
+    console.error(
+      "Update admin game error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Server error while updating game",
+    });
+  }
+};
+
+/* ============================================================
+   DELETE GAME
+============================================================ */
+
+export const deleteAdminGame = async (
+  req,
+  res
+) => {
+  try {
+    const game = await Game.findById(
+      req.params.id
+    );
+
+    if (!game) {
+      return res.status(404).json({
+        success: false,
+        message: "Game not found",
+      });
+    }
+
+    await Game.findByIdAndDelete(
+      req.params.id
+    );
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "Game deleted successfully",
+    });
+  } catch (error) {
+    console.error(
+      "Delete admin game error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Server error while deleting game",
+    });
+  }
+};
+
+// import bcrypt from "bcryptjs";
+// import mongoose from "mongoose";
+
+// import User from "../models/User.js";
+// import Game from "../models/Game.js";
+// import generateToken from "../utils/generateToken.js";
+// import cloudinary from "../config/cloudinary.js";
+
+// // =====================================================
+// // CONSTANTS
+// // =====================================================
+
+// const ALLOWED_SKILLS = [
+//   "Beginner",
+//   "Intermediate",
+//   "Advanced",
+// ];
+
+// const ALLOWED_AVAILABILITY = [
+//   "Available",
+//   "Not Available",
+// ];
+
+// const USER_POPULATE_FIELDS =
+//   "name type image description";
+
+// // =====================================================
+// // HELPER: SEND ERROR
+// // =====================================================
+
+// const sendError = (
+//   res,
+//   error,
+//   defaultMessage = "Server error"
+// ) => {
+//   console.error(
+//     "========== SERVER ERROR =========="
+//   );
+
+//   console.error("Error:", error);
+//   console.error("Message:", error?.message);
+//   console.error(
+//     "HTTP Code:",
+//     error?.http_code
+//   );
+
+//   console.error(
+//     "=================================="
+//   );
+
+//   const cloudinaryStatus =
+//     Number(error?.http_code) >= 400 &&
+//     Number(error?.http_code) < 600
+//       ? Number(error.http_code)
+//       : null;
+
+//   return res.status(cloudinaryStatus || 500).json({
+//     success: false,
+//     message:
+//       error?.message || defaultMessage,
+//   });
+// };
+
+// // =====================================================
+// // HELPER: NORMALIZE AVAILABILITY
+// // =====================================================
+
+// const normalizeAvailability = (value) => {
+//   // Missing / null / undefined
+//   if (
+//     value === undefined ||
+//     value === null ||
+//     value === ""
+//   ) {
+//     return "Available";
+//   }
+
+//   // IMPORTANT:
+//   // Availability must NEVER be an array.
+//   if (Array.isArray(value)) {
+//     console.error(
+//       "Invalid availability array received:",
+//       value
+//     );
+
+//     throw new Error(
+//       "Availability must be a string: Available or Not Available"
+//     );
+//   }
+
+//   const normalized = String(value).trim();
+
+//   if (
+//     !ALLOWED_AVAILABILITY.includes(
+//       normalized
+//     )
+//   ) {
+//     throw new Error(
+//       "Invalid availability status"
+//     );
+//   }
+
+//   return normalized;
+// };
+
+// // =====================================================
+// // HELPER: NORMALIZE SKILL LEVEL
+// // =====================================================
+
+// const normalizeSkillLevel = (value) => {
+//   if (
+//     value === undefined ||
+//     value === null ||
+//     value === ""
+//   ) {
+//     return "Beginner";
+//   }
+
+//   if (Array.isArray(value)) {
+//     throw new Error(
+//       "Skill level must be a string"
+//     );
+//   }
+
+//   const normalized = String(value).trim();
+
+//   if (
+//     !ALLOWED_SKILLS.includes(normalized)
+//   ) {
+//     throw new Error(
+//       "Invalid skill level"
+//     );
+//   }
+
+//   return normalized;
+// };
+
+// // =====================================================
+// // HELPER: PARSE PREFERRED GAMES
+// // =====================================================
+
+// const parsePreferredGames = (value) => {
+//   let games = value;
+
+//   // FormData sends arrays as JSON strings
+//   if (typeof games === "string") {
+//     try {
+//       games = JSON.parse(games);
+//     } catch (error) {
+//       throw new Error(
+//         "Invalid preferredGames JSON"
+//       );
+//     }
+//   }
+
+//   // Fallback for comma-separated values
+//   if (typeof games === "string") {
+//     games = games
+//       .split(",")
+//       .map((game) => game.trim())
+//       .filter(Boolean);
+//   }
+
+//   if (!Array.isArray(games)) {
+//     throw new Error(
+//       "preferredGames must be an array"
+//     );
+//   }
+
+//   // Remove duplicates and empty values
+//   games = [
+//     ...new Set(
+//       games
+//         .map((game) => String(game).trim())
+//         .filter(Boolean)
+//     ),
+//   ];
+
+//   // Validate ObjectIds
+//   const invalidIds = games.filter(
+//     (id) =>
+//       !mongoose.Types.ObjectId.isValid(id)
+//   );
+
+//   if (invalidIds.length > 0) {
+//     throw new Error(
+//       "One or more selected games have invalid IDs"
+//     );
+//   }
+
+//   return games;
+// };
+
+// // =====================================================
+// // HELPER: VALIDATE GAMES
+// // =====================================================
+
+// const validateGames = async (gameIds) => {
+//   if (
+//     !gameIds ||
+//     gameIds.length === 0
+//   ) {
+//     return [];
+//   }
+
+//   const games = await Game.find({
+//     _id: {
+//       $in: gameIds,
+//     },
+//     isActive: true,
+//   }).select("_id");
+
+//   if (
+//     games.length !== gameIds.length
+//   ) {
+//     throw new Error(
+//       "One or more selected games are invalid"
+//     );
+//   }
+
+//   return gameIds;
+// };
+
+// // =====================================================
+// // HELPER: CLOUDINARY UPLOAD
+// // =====================================================
+
+// const uploadImageToCloudinary = async (
+//   buffer
+// ) => {
+//   if (!buffer) {
+//     throw new Error(
+//       "Uploaded image buffer is missing"
+//     );
+//   }
+
+//   return new Promise(
+//     (resolve, reject) => {
+//       const uploadStream =
+//         cloudinary.uploader.upload_stream(
+//           {
+//             folder:
+//               "local-sports/users",
+//             resource_type: "image",
+//           },
+//           (error, result) => {
+//             if (error) {
+//               console.error(
+//                 "========== CLOUDINARY ERROR =========="
+//               );
+
+//               console.error(
+//                 "Cloudinary error:",
+//                 error
+//               );
+
+//               console.error(
+//                 "Message:",
+//                 error?.message
+//               );
+
+//               console.error(
+//                 "HTTP Code:",
+//                 error?.http_code
+//               );
+
+//               console.error(
+//                 "======================================"
+//               );
+
+//               reject(error);
+//               return;
+//             }
+
+//             if (
+//               !result?.secure_url
+//             ) {
+//               reject(
+//                 new Error(
+//                   "Cloudinary did not return a secure image URL"
+//                 )
+//               );
+
+//               return;
+//             }
+
+//             resolve(result);
+//           }
+//         );
+
+//       uploadStream.end(buffer);
+//     }
+//   );
+// };
+
+// // =====================================================
+// // REGISTER USER
+// // =====================================================
+
+// export const registerUser = async (
+//   req,
+//   res
+// ) => {
+//   let createdUser = null;
+
+//   try {
+//     console.log(
+//       "========== REGISTER USER =========="
+//     );
+
+//     console.log(
+//       "Request body:",
+//       req.body
+//     );
+
+//     // =================================================
+//     // GET BODY
+//     // =================================================
+
+//     const {
+//       name,
+//       email,
+//       password,
+//       location,
+//       preferredGames,
+//       availability,
+//       skillLevel,
+//     } = req.body;
+
+//     // =================================================
+//     // BASIC VALIDATION
+//     // =================================================
+
+//     if (
+//       !name ||
+//       !email ||
+//       !password
+//     ) {
+//       return res.status(400).json({
+//         success: false,
+//         message:
+//           "Name, email and password are required",
+//       });
+//     }
+
+//     const cleanName =
+//       String(name).trim();
+
+//     const normalizedEmail =
+//       String(email)
+//         .toLowerCase()
+//         .trim();
+
+//     if (!cleanName) {
+//       return res.status(400).json({
+//         success: false,
+//         message:
+//           "Name cannot be empty",
+//       });
+//     }
+
+//     if (!normalizedEmail) {
+//       return res.status(400).json({
+//         success: false,
+//         message:
+//           "Email cannot be empty",
+//       });
+//     }
+
+//     if (
+//       String(password).length < 6
+//     ) {
+//       return res.status(400).json({
+//         success: false,
+//         message:
+//           "Password must be at least 6 characters",
+//       });
+//     }
+
+//     // =================================================
+//     // CHECK EXISTING USER
+//     // =================================================
+
+//     const existingUser =
+//       await User.findOne({
+//         email: normalizedEmail,
+//       });
+
+//     if (existingUser) {
+//       return res.status(409).json({
+//         success: false,
+//         message:
+//           "User already exists with this email",
+//       });
+//     }
+
+//     // =================================================
+//     // AVAILABILITY
+//     // =================================================
+
+//     let validAvailability;
+
+//     try {
+//       validAvailability =
+//         normalizeAvailability(
+//           availability
+//         );
+//     } catch (error) {
+//       return res.status(400).json({
+//         success: false,
+//         message: error.message,
+//       });
+//     }
+
+//     console.log(
+//       "Registration availability:",
+//       validAvailability
+//     );
+
+//     console.log(
+//       "Registration availability type:",
+//       typeof validAvailability
+//     );
+
+//     // =================================================
+//     // SKILL LEVEL
+//     // =================================================
+
+//     let validSkillLevel;
+
+//     try {
+//       validSkillLevel =
+//         normalizeSkillLevel(
+//           skillLevel
+//         );
+//     } catch (error) {
+//       return res.status(400).json({
+//         success: false,
+//         message: error.message,
+//       });
+//     }
+
+//     // =================================================
+//     // PREFERRED GAMES
+//     // =================================================
+
+//     let validPreferredGames = [];
+
+//     if (
+//       preferredGames !== undefined
+//     ) {
+//       try {
+//         const parsedGames =
+//           parsePreferredGames(
+//             preferredGames
+//           );
+
+//         validPreferredGames =
+//           await validateGames(
+//             parsedGames
+//           );
+//       } catch (error) {
+//         return res.status(400).json({
+//           success: false,
+//           message: error.message,
+//         });
+//       }
+//     }
+
+//     // =================================================
+//     // HASH PASSWORD
+//     // =================================================
+
+//     const hashedPassword =
+//       await bcrypt.hash(
+//         String(password),
+//         10
+//       );
+
+//     // =================================================
+//     // CREATE USER
+//     // =================================================
+
+//     createdUser =
+//       await User.create({
+//         name: cleanName,
+
+//         email: normalizedEmail,
+
+//         password: hashedPassword,
+
+//         location:
+//           location !== undefined
+//             ? String(location).trim()
+//             : "",
+
+//         preferredGames:
+//           validPreferredGames,
+
+//         skillLevel:
+//           validSkillLevel,
+
+//         // IMPORTANT
+//         availability:
+//           validAvailability,
+//       });
+
+//     // =================================================
+//     // VERIFY CREATED USER
+//     // =================================================
+
+//     console.log(
+//       "========== CREATED USER =========="
+//     );
+
+//     console.log(
+//       "Created user ID:",
+//       createdUser._id
+//     );
+
+//     console.log(
+//       "Created availability:",
+//       createdUser.availability
+//     );
+
+//     console.log(
+//       "Created availability type:",
+//       typeof createdUser.availability
+//     );
+
+//     console.log(
+//       "=================================="
+//     );
+
+//     // =================================================
+//     // PROFILE IMAGE
+//     // =================================================
+
+//     if (req.file) {
+//       console.log(
+//         "========== REGISTER IMAGE =========="
+//       );
+
+//       try {
+//         const uploadResult =
+//           await uploadImageToCloudinary(
+//             req.file.buffer
+//           );
+
+//         createdUser.image =
+//           uploadResult.secure_url;
+
+//         await createdUser.save();
+
+//         console.log(
+//           "Cloudinary upload successful:",
+//           uploadResult.secure_url
+//         );
+//       } catch (uploadError) {
+//         await User.findByIdAndDelete(
+//           createdUser._id
+//         );
+
+//         return sendError(
+//           res,
+//           uploadError,
+//           "Profile image upload failed"
+//         );
+//       }
+//     }
+
+//     // =================================================
+//     // GENERATE TOKEN
+//     // =================================================
+
+//     const token =
+//       generateToken(
+//         createdUser._id
+//       );
+
+//     // =================================================
+//     // RESPONSE
+//     // =================================================
+
+//     return res.status(201).json({
+//       success: true,
+
+//       message:
+//         "User registered successfully",
+
+//       token,
+
+//       user: {
+//         id: createdUser._id,
+
+//         name: createdUser.name,
+
+//         email: createdUser.email,
+
+//         location:
+//           createdUser.location,
+
+//         image:
+//           createdUser.image,
+
+//         preferredGames:
+//           createdUser.preferredGames,
+
+//         availability:
+//           createdUser.availability,
+
+//         skillLevel:
+//           createdUser.skillLevel,
+
+//         role:
+//           createdUser.role,
+//       },
+//     });
+//   } catch (error) {
+//     // =================================================
+//     // CLEANUP
+//     // =================================================
+
+//     if (createdUser?._id) {
+//       try {
+//         await User.findByIdAndDelete(
+//           createdUser._id
+//         );
+//       } catch (cleanupError) {
+//         console.error(
+//           "User cleanup failed:",
+//           cleanupError
+//         );
+//       }
+//     }
+
+//     return sendError(
+//       res,
+//       error,
+//       "Server error during registration"
+//     );
+//   }
+// };
+
+// // =====================================================
+// // LOGIN USER
+// // =====================================================
+
+// export const loginUser = async (
+//   req,
+//   res
+// ) => {
+//   try {
+//     const {
+//       email,
+//       password,
+//     } = req.body;
+
+//     // =================================================
+//     // VALIDATION
+//     // =================================================
+
+//     if (!email || !password) {
+//       return res.status(400).json({
+//         success: false,
+//         message:
+//           "Email and password are required",
+//       });
+//     }
+
+//     const normalizedEmail =
+//       String(email)
+//         .toLowerCase()
+//         .trim();
+
+//     // =================================================
+//     // FIND USER
+//     // =================================================
+
+//     const user =
+//       await User.findOne({
+//         email: normalizedEmail,
+//       });
+
+//     if (!user) {
+//       return res.status(401).json({
+//         success: false,
+//         message:
+//           "Invalid email or password",
+//       });
+//     }
+
+//     // =================================================
+//     // PASSWORD
+//     // =================================================
+
+//     const isPasswordMatch =
+//       await bcrypt.compare(
+//         String(password),
+//         user.password
+//       );
+
+//     if (!isPasswordMatch) {
+//       return res.status(401).json({
+//         success: false,
+//         message:
+//           "Invalid email or password",
+//       });
+//     }
+
+//     // =================================================
+//     // NORMALIZE LEGACY AVAILABILITY
+//     // =================================================
+
+//     let loginAvailability =
+//       user.availability;
+
+//     if (
+//       Array.isArray(
+//         loginAvailability
+//       )
+//     ) {
+//       loginAvailability =
+//         "Available";
+//     }
+
+//     if (
+//       !ALLOWED_AVAILABILITY.includes(
+//         loginAvailability
+//       )
+//     ) {
+//       loginAvailability =
+//         "Available";
+//     }
+
+//     // =================================================
+//     // GENERATE TOKEN
+//     // =================================================
+
+//     const token =
+//       generateToken(user._id);
+
+//     // =================================================
+//     // RESPONSE
+//     // =================================================
+
+//     return res.status(200).json({
+//       success: true,
+
+//       message:
+//         "Login successful",
+
+//       token,
+
+//       user: {
+//         id: user._id,
+
+//         name: user.name,
+
+//         email: user.email,
+
+//         location: user.location,
+
+//         image: user.image,
+
+//         preferredGames:
+//           user.preferredGames,
+
+//         availability:
+//           loginAvailability,
+
+//         skillLevel:
+//           user.skillLevel,
+
+//         role: user.role,
+//       },
+//     });
+//   } catch (error) {
+//     return sendError(
+//       res,
+//       error,
+//       "Server error during login"
+//     );
+//   }
+// };
+
+// // =====================================================
+// // LOGOUT USER
+// // =====================================================
+
+// export const logoutUser = async (
+//   req,
+//   res
+// ) => {
+//   return res.status(200).json({
+//     success: true,
+//     message:
+//       "Logout successful",
+//   });
+// };
+
+// // =====================================================
+// // GET MY PROFILE
+// // =====================================================
+
+// export const getMyProfile = async (
+//   req,
+//   res
+// ) => {
+//   try {
+//     console.log(
+//       "========== GET MY PROFILE =========="
+//     );
+
+//     if (!req.user?._id) {
+//       return res.status(401).json({
+//         success: false,
+//         message:
+//           "Authentication required",
+//       });
+//     }
+
+//     const user =
+//       await User.findById(
+//         req.user._id
+//       )
+//         .select("-password")
+//         .populate(
+//           "preferredGames",
+//           USER_POPULATE_FIELDS
+//         );
+
+//     if (!user) {
+//       return res.status(404).json({
+//         success: false,
+//         message:
+//           "User not found",
+//       });
+//     }
+
+//     // =================================================
+//     // LEGACY DATA PROTECTION
+//     // =================================================
+
+//     if (
+//       Array.isArray(
+//         user.availability
+//       )
+//     ) {
+//       console.warn(
+//         "Legacy availability array detected. Converting to Available."
+//       );
+
+//       user.availability =
+//         "Available";
+
+//       await user.save();
+//     }
+
+//     // =================================================
+//     // RESPONSE
+//     // =================================================
+
+//     return res.status(200).json({
+//       success: true,
+//       user,
+//     });
+//   } catch (error) {
+//     return sendError(
+//       res,
+//       error,
+//       "Server error while fetching profile"
+//     );
+//   }
+// };
+
+// // =====================================================
+// // UPDATE MY PROFILE
+// // =====================================================
+
+// export const updateMyProfile = async (
+//   req,
+//   res
+// ) => {
+//   try {
+//     console.log(
+//       "========== UPDATE PROFILE =========="
+//     );
+
+//     // =================================================
+//     // AUTH CHECK
+//     // =================================================
+
+//     if (!req.user?._id) {
+//       return res.status(401).json({
+//         success: false,
+//         message:
+//           "Authentication required",
+//       });
+//     }
+
+//     console.log(
+//       "User ID:",
+//       req.user._id
+//     );
+
+//     console.log(
+//       "Request body:",
+//       req.body
+//     );
+
+//     console.log(
+//       "Request body availability:",
+//       req.body?.availability
+//     );
+
+//     console.log(
+//       "Request availability type:",
+//       typeof req.body?.availability
+//     );
+
+//     console.log(
+//       "File:",
+//       req.file
+//         ? {
+//             name:
+//               req.file.originalname,
+//             type:
+//               req.file.mimetype,
+//             size:
+//               req.file.size,
+//           }
+//         : "No new image"
+//     );
+
+//     // =================================================
+//     // FIND USER
+//     // =================================================
+
+//     const user =
+//       await User.findById(
+//         req.user._id
+//       );
+
+//     if (!user) {
+//       return res.status(404).json({
+//         success: false,
+//         message:
+//           "User not found",
+//       });
+//     }
+
+//     // =================================================
+//     // REPAIR OLD AVAILABILITY DATA
+//     // =================================================
+
+//     if (
+//       Array.isArray(
+//         user.availability
+//       )
+//     ) {
+//       console.warn(
+//         "Existing database availability is an array:",
+//         user.availability
+//       );
+
+//       user.availability =
+//         "Available";
+//     }
+
+//     // =================================================
+//     // UPDATE NAME
+//     // =================================================
+
+//     if (
+//       req.body.name !== undefined
+//     ) {
+//       const newName =
+//         String(
+//           req.body.name
+//         ).trim();
+
+//       if (!newName) {
+//         return res.status(400).json({
+//           success: false,
+//           message:
+//             "Name cannot be empty",
+//         });
+//       }
+
+//       user.name = newName;
+//     }
+
+//     // =================================================
+//     // UPDATE LOCATION
+//     // =================================================
+
+//     if (
+//       req.body.location !==
+//       undefined
+//     ) {
+//       user.location =
+//         String(
+//           req.body.location
+//         ).trim();
+//     }
+
+//     // =================================================
+//     // UPDATE SKILL LEVEL
+//     // =================================================
+
+//     if (
+//       req.body.skillLevel !==
+//       undefined
+//     ) {
+//       let newSkillLevel;
+
+//       try {
+//         newSkillLevel =
+//           normalizeSkillLevel(
+//             req.body.skillLevel
+//           );
+//       } catch (error) {
+//         return res.status(400).json({
+//           success: false,
+//           message:
+//             error.message,
+//         });
+//       }
+
+//       user.skillLevel =
+//         newSkillLevel;
+//     }
+
+//     // =================================================
+//     // UPDATE AVAILABILITY
+//     // =================================================
+
+//     if (
+//       req.body.availability !==
+//       undefined
+//     ) {
+//       let newAvailability;
+
+//       try {
+//         newAvailability =
+//           normalizeAvailability(
+//             req.body.availability
+//           );
+//       } catch (error) {
+//         return res.status(400).json({
+//           success: false,
+//           message:
+//             error.message,
+//         });
+//       }
+
+//       console.log(
+//         "New availability:",
+//         newAvailability
+//       );
+
+//       console.log(
+//         "New availability type:",
+//         typeof newAvailability
+//       );
+
+//       user.availability =
+//         newAvailability;
+//     }
+
+//     // =================================================
+//     // UPDATE PREFERRED GAMES
+//     // =================================================
+
+//     if (
+//       req.body.preferredGames !==
+//       undefined
+//     ) {
+//       try {
+//         const parsedGames =
+//           parsePreferredGames(
+//             req.body.preferredGames
+//           );
+
+//         const validGames =
+//           await validateGames(
+//             parsedGames
+//           );
+
+//         user.preferredGames =
+//           validGames;
+//       } catch (error) {
+//         return res.status(400).json({
+//           success: false,
+//           message:
+//             error.message,
+//         });
+//       }
+//     }
+
+//     // =================================================
+//     // UPDATE IMAGE
+//     // =================================================
+
+//     if (req.file) {
+//       console.log(
+//         "========== PROFILE IMAGE UPDATE =========="
+//       );
+
+//       if (!req.file.buffer) {
+//         return res.status(400).json({
+//           success: false,
+//           message:
+//             "Uploaded image buffer is missing",
+//         });
+//       }
+
+//       try {
+//         const uploadResult =
+//           await uploadImageToCloudinary(
+//             req.file.buffer
+//           );
+
+//         user.image =
+//           uploadResult.secure_url;
+
+//         console.log(
+//           "New image URL:",
+//           uploadResult.secure_url
+//         );
+//       } catch (uploadError) {
+//         return sendError(
+//           res,
+//           uploadError,
+//           "Profile image upload failed"
+//         );
+//       }
+//     }
+
+//     // =================================================
+//     // FINAL AVAILABILITY CHECK BEFORE SAVE
+//     // =================================================
+
+//     if (
+//       !ALLOWED_AVAILABILITY.includes(
+//         user.availability
+//       )
+//     ) {
+//       console.error(
+//         "Invalid availability before save:",
+//         user.availability
+//       );
+
+//       return res.status(400).json({
+//         success: false,
+//         message:
+//           "Invalid availability value before save",
+//       });
+//     }
+
+//     console.log(
+//       "========== BEFORE SAVE =========="
+//     );
+
+//     console.log(
+//       "Availability:",
+//       user.availability
+//     );
+
+//     console.log(
+//       "Availability type:",
+//       typeof user.availability
+//     );
+
+//     console.log(
+//       "================================="
+//     );
+
+//     // =================================================
+//     // SAVE
+//     // =================================================
+
+//     await user.save();
+
+//     // =================================================
+//     // VERIFY DIRECTLY AFTER SAVE
+//     // =================================================
+
+//     const savedUser =
+//       await User.findById(
+//         user._id
+//       );
+
+//     console.log(
+//       "========== AFTER SAVE =========="
+//     );
+
+//     console.log(
+//       "Saved availability:",
+//       savedUser?.availability
+//     );
+
+//     console.log(
+//       "Saved availability type:",
+//       typeof savedUser?.availability
+//     );
+
+//     console.log(
+//       "================================"
+//     );
+
+//     // =================================================
+//     // EXTRA SAFETY CHECK
+//     // =================================================
+
+//     if (
+//       !savedUser ||
+//       !ALLOWED_AVAILABILITY.includes(
+//         savedUser.availability
+//       )
+//     ) {
+//       console.error(
+//         "DATABASE RETURNED INVALID AVAILABILITY:",
+//         savedUser?.availability
+//       );
+
+//       return res.status(500).json({
+//         success: false,
+//         message:
+//           "Profile saved but availability was stored incorrectly",
+//       });
+//     }
+
+//     // =================================================
+//     // GET UPDATED USER WITH POPULATION
+//     // =================================================
+
+//     const updatedUser =
+//       await User.findById(
+//         user._id
+//       )
+//         .select("-password")
+//         .populate(
+//           "preferredGames",
+//           USER_POPULATE_FIELDS
+//         );
+
+//     if (!updatedUser) {
+//       return res.status(404).json({
+//         success: false,
+//         message:
+//           "Updated user could not be found",
+//       });
+//     }
+
+//     // =================================================
+//     // FINAL DEBUG
+//     // =================================================
+
+//     console.log(
+//       "========== UPDATED USER =========="
+//     );
+
+//     console.log(
+//       "ID:",
+//       updatedUser._id
+//     );
+
+//     console.log(
+//       "Availability:",
+//       updatedUser.availability
+//     );
+
+//     console.log(
+//       "Availability type:",
+//       typeof updatedUser.availability
+//     );
+
+//     console.log(
+//       "=================================="
+//     );
+
+//     // =================================================
+//     // RESPONSE
+//     // =================================================
+
+//     return res.status(200).json({
+//       success: true,
+
+//       message:
+//         "Profile updated successfully",
+
+//       user: updatedUser,
+//     });
+//   } catch (error) {
+//     console.error(
+//       "========== UPDATE PROFILE ERROR =========="
+//     );
+
+//     console.error(
+//       "Error:",
+//       error
+//     );
+
+//     console.error(
+//       "Message:",
+//       error?.message
+//     );
+
+//     console.error(
+//       "Stack:",
+//       error?.stack
+//     );
+
+//     return sendError(
+//       res,
+//       error,
+//       "Server error while updating profile"
+//     );
+//   }
+// };
+
+
+
+
+import bcrypt from "bcryptjs";
+import mongoose from "mongoose";
+
+import User from "../models/User.js";
+import Game from "../models/Game.js";
+import generateToken from "../utils/generateToken.js";
+import cloudinary from "../config/cloudinary.js";
+
+// =====================================================
+// CONSTANTS
+// =====================================================
+
+const ALLOWED_SKILLS = ["Beginner", "Intermediate", "Advanced"];
+
+const ALLOWED_AVAILABILITY = ["Available", "Not Available"];
+
+const USER_POPULATE_FIELDS = "name type image description";
+
+// =====================================================
+// HELPER: SEND ERROR
+// =====================================================
+
+const sendError = (res, error, defaultMessage = "Server error") => {
+  console.error("========== SERVER ERROR ==========");
+  console.error("Error:", error);
+  console.error("Message:", error?.message);
+  console.error("HTTP Code:", error?.http_code);
+  console.error("==================================");
+
+  const cloudinaryStatus =
+    Number(error?.http_code) >= 400 && Number(error?.http_code) < 600
+      ? Number(error.http_code)
+      : null;
+
+  return res.status(cloudinaryStatus || 500).json({
+    success: false,
+    message: error?.message || defaultMessage,
+  });
+};
+
+// =====================================================
+// HELPER: NORMALIZE SKILL LEVEL
+// =====================================================
+
+const normalizeSkillLevel = (value) => {
+  if (value === undefined || value === null || value === "") {
+    return "Beginner";
+  }
+
+  if (Array.isArray(value)) {
+    throw new Error("Skill level must be a string");
+  }
+
+  const normalized = String(value).trim();
+
+  if (!ALLOWED_SKILLS.includes(normalized)) {
+    throw new Error("Invalid skill level");
+  }
+
+  return normalized;
+};
+
+// =====================================================
+// HELPER: PARSE PREFERRED GAMES
+// =====================================================
+
+const parsePreferredGames = (value) => {
+  let games = value;
+
+  if (typeof games === "string") {
+    try {
+      games = JSON.parse(games);
+    } catch (error) {
+      throw new Error("Invalid preferredGames JSON");
+    }
+  }
+
+  if (typeof games === "string") {
+    games = games
+      .split(",")
+      .map((game) => game.trim())
+      .filter(Boolean);
+  }
+
+  if (!Array.isArray(games)) {
+    throw new Error("preferredGames must be an array");
+  }
+
+  games = [
+    ...new Set(games.map((game) => String(game).trim()).filter(Boolean)),
+  ];
+
+  const invalidIds = games.filter(
+    (id) => !mongoose.Types.ObjectId.isValid(id)
+  );
+
+  if (invalidIds.length > 0) {
+    throw new Error("One or more selected games have invalid IDs");
+  }
+
+  return games;
+};
+
+// =====================================================
+// HELPER: VALIDATE GAMES
+// =====================================================
+
+const validateGames = async (gameIds) => {
+  if (!gameIds || gameIds.length === 0) {
+    return [];
+  }
+
+  const games = await Game.find({
+    _id: { $in: gameIds },
+    isActive: true,
+  }).select("_id");
+
+  if (games.length !== gameIds.length) {
+    throw new Error("One or more selected games are invalid");
+  }
+
+  return gameIds;
+};
+
+// =====================================================
+// HELPER: CLOUDINARY UPLOAD
+// =====================================================
+
+const uploadImageToCloudinary = async (buffer) => {
+  if (!buffer) {
+    throw new Error("Uploaded image buffer is missing");
+  }
+
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: "local-sports/users",
+        resource_type: "image",
+      },
+      (error, result) => {
+        if (error) {
+          console.error("========== CLOUDINARY ERROR ==========");
+          console.error("Cloudinary error:", error);
+          console.error("Message:", error?.message);
+          console.error("HTTP Code:", error?.http_code);
+          console.error("======================================");
+
+          reject(error);
+          return;
+        }
+
+        if (!result?.secure_url) {
+          reject(new Error("Cloudinary did not return a secure image URL"));
+          return;
+        }
+
+        resolve(result);
+      }
+    );
+
+    uploadStream.end(buffer);
+  });
+};
+
+// =====================================================
+// REGISTER USER
+// =====================================================
+
+export const registerUser = async (req, res) => {
+  let createdUser = null;
+
+  try {
+    console.log("========== REGISTER USER ==========");
+    console.log("Request body:", req.body);
+
+    const { name, email, password, location, preferredGames, skillLevel } =
+      req.body;
+
+    // =================================================
+    // BASIC VALIDATION
+    // =================================================
+
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, email and password are required",
+      });
+    }
+
+    const cleanName = String(name).trim();
+    const normalizedEmail = String(email).toLowerCase().trim();
+
+    if (!cleanName) {
+      return res.status(400).json({
+        success: false,
+        message: "Name cannot be empty",
+      });
+    }
+
+    if (!normalizedEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "Email cannot be empty",
+      });
+    }
+
+    if (String(password).length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters",
+      });
+    }
+
+    // =================================================
+    // CHECK EXISTING USER
+    // =================================================
+
+    const existingUser = await User.findOne({ email: normalizedEmail });
+
+    if (existingUser) {
+      return res.status(409).json({
+        success: false,
+        message: "User already exists with this email",
+      });
+    }
+
+    // =================================================
+    // SKILL LEVEL
+    // =================================================
+
+    let validSkillLevel;
+
+    try {
+      validSkillLevel = normalizeSkillLevel(skillLevel);
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    // =================================================
+    // PREFERRED GAMES
+    // =================================================
+
+    let validPreferredGames = [];
+
+    if (preferredGames !== undefined) {
+      try {
+        const parsedGames = parsePreferredGames(preferredGames);
+        validPreferredGames = await validateGames(parsedGames);
+      } catch (error) {
+        return res.status(400).json({
+          success: false,
+          message: error.message,
+        });
+      }
+    }
+
+    // =================================================
+    // HASH PASSWORD
+    // =================================================
+
+    const hashedPassword = await bcrypt.hash(String(password), 10);
+
+    // =================================================
+    // CREATE USER
+    // =================================================
+
+    createdUser = await User.create({
+      name: cleanName,
+      email: normalizedEmail,
+      password: hashedPassword,
+      location: location !== undefined ? String(location).trim() : "",
+      preferredGames: validPreferredGames,
+      skillLevel: validSkillLevel,
+    });
+
+    console.log("========== CREATED USER ==========");
+    console.log("Created user ID:", createdUser._id);
+    console.log("Created availability:", createdUser.availability);
+    console.log("==================================");
+
+    // =================================================
+    // PROFILE IMAGE
+    // =================================================
+
+    if (req.file) {
+      console.log("========== REGISTER IMAGE ==========");
+
+      try {
+        const uploadResult = await uploadImageToCloudinary(req.file.buffer);
+
+        createdUser.image = uploadResult.secure_url;
+
+        await createdUser.save();
+
+        console.log(
+          "Cloudinary upload successful:",
+          uploadResult.secure_url
+        );
+      } catch (uploadError) {
+        await User.findByIdAndDelete(createdUser._id);
+
+        return sendError(res, uploadError, "Profile image upload failed");
+      }
+    }
+
+    // =================================================
+    // GENERATE TOKEN
+    // =================================================
+
+    const token = generateToken(createdUser._id);
+
+    // =================================================
+    // RESPONSE
+    // =================================================
+
+    return res.status(201).json({
+      success: true,
+      message: "User registered successfully",
+      token,
+      user: {
+        id: createdUser._id,
+        name: createdUser.name,
+        email: createdUser.email,
+        location: createdUser.location,
+        image: createdUser.image,
+        preferredGames: createdUser.preferredGames,
+        availability: createdUser.availability,
+        skillLevel: createdUser.skillLevel,
+        role: createdUser.role,
+      },
+    });
+  } catch (error) {
+    if (createdUser?._id) {
+      try {
+        await User.findByIdAndDelete(createdUser._id);
+      } catch (cleanupError) {
+        console.error("User cleanup failed:", cleanupError);
+      }
+    }
+
+    return sendError(res, error, "Server error during registration");
+  }
+};
+
+// =====================================================
+// LOGIN USER
+// =====================================================
+
+export const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required",
+      });
+    }
+
+    const normalizedEmail = String(email).toLowerCase().trim();
+
+    const user = await User.findOne({ email: normalizedEmail });
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    const isPasswordMatch = await bcrypt.compare(
+      String(password),
+      user.password
+    );
+
+    if (!isPasswordMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    // =================================================
+    // NORMALIZE LEGACY AVAILABILITY
+    // =================================================
+
+    let loginAvailability = user.availability;
+
+    if (Array.isArray(loginAvailability)) {
+      loginAvailability = "Available";
+    }
+
+    if (!ALLOWED_AVAILABILITY.includes(loginAvailability)) {
+      loginAvailability = "Available";
+    }
+
+    const token = generateToken(user._id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        location: user.location,
+        image: user.image,
+        preferredGames: user.preferredGames,
+        availability: loginAvailability,
+        skillLevel: user.skillLevel,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    return sendError(res, error, "Server error during login");
+  }
+};
+
+// =====================================================
+// LOGOUT USER
+// =====================================================
+
+export const logoutUser = async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    message: "Logout successful",
+  });
+};
+
+// =====================================================
+// GET MY PROFILE
+// =====================================================
+
+export const getMyProfile = async (req, res) => {
+  try {
+    console.log("========== GET MY PROFILE ==========");
+
+    if (!req.user?._id) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+    }
+
+    const user = await User.findById(req.user._id)
+      .select("-password")
+      .populate("preferredGames", USER_POPULATE_FIELDS);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // =================================================
+    // LEGACY DATA PROTECTION
+    // =================================================
+
+    if (Array.isArray(user.availability)) {
+      console.warn(
+        "Legacy availability array detected. Converting to Available."
+      );
+
+      user.availability = "Available";
+
+      await user.save();
+    }
+
+    return res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    return sendError(res, error, "Server error while fetching profile");
+  }
+};
+
+// =====================================================
+// UPDATE MY PROFILE
+// =====================================================
+
+export const updateMyProfile = async (req, res) => {
+  try {
+    console.log("========== UPDATE PROFILE ==========");
+
+    if (!req.user?._id) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+    }
+
+    console.log("User ID:", req.user._id);
+    console.log("Request body:", req.body);
+    console.log(
+      "File:",
+      req.file
+        ? {
+            name: req.file.originalname,
+            type: req.file.mimetype,
+            size: req.file.size,
+          }
+        : "No new image"
+    );
+
+    // =================================================
+    // FIND USER
+    // =================================================
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // =================================================
+    // UPDATE NAME
+    // =================================================
+
+    if (req.body.name !== undefined) {
+      const newName = String(req.body.name).trim();
+
+      if (!newName) {
+        return res.status(400).json({
+          success: false,
+          message: "Name cannot be empty",
+        });
+      }
+
+      user.name = newName;
+    }
+
+    // =================================================
+    // UPDATE LOCATION
+    // =================================================
+
+    if (req.body.location !== undefined) {
+      user.location = String(req.body.location).trim();
+    }
+
+    // =================================================
+    // UPDATE SKILL LEVEL
+    // =================================================
+
+    if (req.body.skillLevel !== undefined) {
+      let newSkillLevel;
+
+      try {
+        newSkillLevel = normalizeSkillLevel(req.body.skillLevel);
+      } catch (error) {
+        return res.status(400).json({
+          success: false,
+          message: error.message,
+        });
+      }
+
+      user.skillLevel = newSkillLevel;
+    }
+
+    // =================================================
+    // UPDATE PREFERRED GAMES
+    // =================================================
+
+    if (req.body.preferredGames !== undefined) {
+      try {
+        const parsedGames = parsePreferredGames(req.body.preferredGames);
+        const validGames = await validateGames(parsedGames);
+
+        user.preferredGames = validGames;
+      } catch (error) {
+        return res.status(400).json({
+          success: false,
+          message: error.message,
+        });
+      }
+    }
+
+    // =================================================
+    // UPDATE IMAGE
+    // =================================================
+
+    if (req.file) {
+      console.log("========== PROFILE IMAGE UPDATE ==========");
+
+      if (!req.file.buffer) {
+        return res.status(400).json({
+          success: false,
+          message: "Uploaded image buffer is missing",
+        });
+      }
+
+      try {
+        const uploadResult = await uploadImageToCloudinary(req.file.buffer);
+
+        user.image = uploadResult.secure_url;
+
+        console.log("New image URL:", uploadResult.secure_url);
+      } catch (uploadError) {
+        return sendError(res, uploadError, "Profile image upload failed");
+      }
+    }
+
+    // =================================================
+    // SAVE
+    // =================================================
+
+    await user.save();
+
+    // =================================================
+    // GET UPDATED USER WITH POPULATION
+    // =================================================
+
+    const updatedUser = await User.findById(user._id)
+      .select("-password")
+      .populate("preferredGames", USER_POPULATE_FIELDS);
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "Updated user could not be found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("========== UPDATE PROFILE ERROR ==========");
+    console.error("Error:", error);
+    console.error("Message:", error?.message);
+    console.error("Stack:", error?.stack);
+
+    return sendError(res, error, "Server error while updating profile");
+  }
+};
+import Game from "../models/Game.js";
+
+export const getGames = async (req, res) => {
+  try {
+    const games = await Game.find({ isActive: true })
+      .select("name type image description")
+      .sort({ name: 1 });
+
+    return res.status(200).json({
+      success: true,
+      count: games.length,
+      games,
+    });
+  } catch (error) {
+    console.error("Get games error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching games",
+    });
+  }
+};
+
+export const getGameById = async (req, res) => {
+  try {
+    const game = await Game.findOne({
+      _id: req.params.id,
+      isActive: true,
+    }).select("name type image description");
+
+    if (!game) {
+      return res.status(404).json({
+        success: false,
+        message: "Game not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      game,
+    });
+  } catch (error) {
+    console.error("Get game error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching game",
+    });
+  }
+};
+
+import mongoose from "mongoose";
+
+import PartnerRequest from "../models/PartnerRequest.js";
+import User from "../models/User.js";
+import Game from "../models/Game.js";
+
+/* ============================================================
+   SEND PARTNER REQUEST
+============================================================ */
+
+export const sendPartnerRequest = async (req, res) => {
+  try {
+    const { receiverId, gameId, message } = req.body;
+
+    /* --------------------------------------------------------
+       1. Required fields
+    -------------------------------------------------------- */
+
+    if (!receiverId || !gameId) {
+      return res.status(400).json({
+        success: false,
+        message: "Receiver and game are required",
+      });
+    }
+
+    /* --------------------------------------------------------
+       2. Validate MongoDB ObjectIds
+    -------------------------------------------------------- */
+
+    if (!mongoose.Types.ObjectId.isValid(receiverId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid receiver ID",
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(gameId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid game ID",
+      });
+    }
+
+    /* --------------------------------------------------------
+       3. Cannot send request to yourself
+    -------------------------------------------------------- */
+
+    if (req.user._id.toString() === receiverId.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: "You cannot send a request to yourself",
+      });
+    }
+
+    /* --------------------------------------------------------
+       4. Check receiver
+    -------------------------------------------------------- */
+
+    const receiver = await User.findOne({
+      _id: receiverId,
+      role: "user",
+    });
+
+    if (!receiver) {
+      return res.status(404).json({
+        success: false,
+        message: "Receiver not found",
+      });
+    }
+
+    /* --------------------------------------------------------
+       5. Check game
+    -------------------------------------------------------- */
+
+    const game = await Game.findOne({
+      _id: gameId,
+      isActive: true,
+    });
+
+    if (!game) {
+      return res.status(404).json({
+        success: false,
+        message: "Game not found or inactive",
+      });
+    }
+
+    /* --------------------------------------------------------
+       6. Check existing accepted connection
+    -------------------------------------------------------- */
+
+    const existingConnection = await PartnerRequest.findOne({
+      game: gameId,
+      status: "accepted",
+
+      $or: [
+        {
+          sender: req.user._id,
+          receiver: receiverId,
+        },
+        {
+          sender: receiverId,
+          receiver: req.user._id,
+        },
+      ],
+    });
+
+    if (existingConnection) {
+      return res.status(409).json({
+        success: false,
+        message: "You are already partners for this game",
+      });
+    }
+
+    /* --------------------------------------------------------
+       7. Check pending request in both directions
+    -------------------------------------------------------- */
+
+    const existingRequest = await PartnerRequest.findOne({
+      game: gameId,
+      status: "pending",
+
+      $or: [
+        {
+          sender: req.user._id,
+          receiver: receiverId,
+        },
+        {
+          sender: receiverId,
+          receiver: req.user._id,
+        },
+      ],
+    });
+
+    if (existingRequest) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "A pending request already exists between these players",
+      });
+    }
+
+    /* --------------------------------------------------------
+       8. Create request
+    -------------------------------------------------------- */
+
+    const request = await PartnerRequest.create({
+      sender: req.user._id,
+      receiver: receiverId,
+      game: gameId,
+      message: message || "",
+    });
+
+    /* --------------------------------------------------------
+       9. Populate response
+
+       IMPORTANT:
+       User model uses "image", not "Image"
+       and not "profileImage".
+    -------------------------------------------------------- */
+
+    const populatedRequest =
+      await PartnerRequest.findById(request._id)
+        .populate(
+          "sender",
+          "name image location skillLevel"
+        )
+        .populate(
+          "receiver",
+          "name image location skillLevel"
+        )
+        .populate(
+          "game",
+          "name type image"
+        );
+
+    /* --------------------------------------------------------
+       10. Response
+    -------------------------------------------------------- */
+
+    return res.status(201).json({
+      success: true,
+      message: "Partner request sent successfully",
+      request: populatedRequest,
+    });
+  } catch (error) {
+    console.error(
+      "Send partner request error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error while sending request",
+    });
+  }
+};
+
+/* ============================================================
+   GET RECEIVED REQUESTS
+============================================================ */
+
+export const getReceivedRequests = async (req, res) => {
+  try {
+    const requests = await PartnerRequest.find({
+      receiver: req.user._id,
+      status: "pending",
+    })
+      .populate(
+        "sender",
+        "name image location skillLevel"
+      )
+      .populate(
+        "game",
+        "name type image"
+      )
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: requests.length,
+      requests,
+    });
+  } catch (error) {
+    console.error(
+      "Get received requests error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Server error while fetching received requests",
+    });
+  }
+};
+
+/* ============================================================
+   GET SENT REQUESTS
+============================================================ */
+
+export const getSentRequests = async (req, res) => {
+  try {
+    const requests = await PartnerRequest.find({
+      sender: req.user._id,
+      status: "pending",
+    })
+      .populate(
+        "receiver",
+        "name image location skillLevel"
+      )
+      .populate(
+        "game",
+        "name type image"
+      )
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: requests.length,
+      requests,
+    });
+  } catch (error) {
+    console.error(
+      "Get sent requests error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Server error while fetching sent requests",
+    });
+  }
+};
+
+/* ============================================================
+   GET MY PARTNERS
+============================================================ */
+
+export const getMyPartners = async (req, res) => {
+  try {
+    const requests =
+      await PartnerRequest.find({
+        status: "accepted",
+
+        $or: [
+          {
+            sender: req.user._id,
+          },
+          {
+            receiver: req.user._id,
+          },
+        ],
+      })
+        .populate(
+          "sender",
+          "name image location skillLevel"
+        )
+        .populate(
+          "receiver",
+          "name image location skillLevel"
+        )
+        .populate(
+          "game",
+          "name type image"
+        )
+        .sort({ updatedAt: -1 });
+
+    const partners = requests.map(
+      (request) => {
+        const isSender =
+          request.sender._id.toString() ===
+          req.user._id.toString();
+
+        return {
+          requestId: request._id,
+
+          partner: isSender
+            ? request.receiver
+            : request.sender,
+
+          game: request.game,
+
+          connectedAt:
+            request.updatedAt,
+        };
+      }
+    );
+
+    return res.status(200).json({
+      success: true,
+      count: partners.length,
+      partners,
+    });
+  } catch (error) {
+    console.error(
+      "Get partners error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Server error while fetching partners",
+    });
+  }
+};
+
+/* ============================================================
+   UPDATE REQUEST STATUS
+   ACCEPT / REJECT
+============================================================ */
+
+export const updateRequestStatus = async (
+  req,
+  res
+) => {
+  try {
+    const { status } = req.body;
+    const { id } = req.params;
+
+    /* --------------------------------------------------------
+       1. Validate status
+    -------------------------------------------------------- */
+
+    if (
+      !["accepted", "rejected"].includes(
+        status
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Status must be accepted or rejected",
+      });
+    }
+
+    /* --------------------------------------------------------
+       2. Validate request ID
+    -------------------------------------------------------- */
+
+    if (
+      !mongoose.Types.ObjectId.isValid(id)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid request ID",
+      });
+    }
+
+    /* --------------------------------------------------------
+       3. Find request
+       Only receiver can accept/reject
+    -------------------------------------------------------- */
+
+    const request =
+      await PartnerRequest.findOne({
+        _id: id,
+        receiver: req.user._id,
+      });
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: "Request not found",
+      });
+    }
+
+    /* --------------------------------------------------------
+       4. Request must be pending
+    -------------------------------------------------------- */
+
+    if (
+      request.status !== "pending"
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "This request has already been processed",
+      });
+    }
+
+    /* --------------------------------------------------------
+       5. Update status
+    -------------------------------------------------------- */
+
+    request.status = status;
+
+    await request.save();
+
+    /* --------------------------------------------------------
+       6. Populate updated request
+    -------------------------------------------------------- */
+
+    const updatedRequest =
+      await PartnerRequest.findById(
+        request._id
+      )
+        .populate(
+          "sender",
+          "name image location skillLevel"
+        )
+        .populate(
+          "receiver",
+          "name image location skillLevel"
+        )
+        .populate(
+          "game",
+          "name type image"
+        );
+
+    /* --------------------------------------------------------
+       7. Response
+    -------------------------------------------------------- */
+
+    return res.status(200).json({
+      success: true,
+      message: `Request ${status} successfully`,
+      request: updatedRequest,
+    });
+  } catch (error) {
+    console.error(
+      "Update request status error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Server error while updating request",
+    });
+  }
+};
+
+import mongoose from "mongoose";
+import User from "../models/User.js";
+
+export const getPlayers = async (req, res) => {
+  try {
+    const {
+      game,
+      location,
+      skillLevel,
+      availability,
+    } = req.query;
+
+    const filter = {
+      _id: { $ne: req.user._id },
+      role: "user",
+    };
+
+    if (location) {
+      filter.location = {
+        $regex: location,
+        $options: "i",
+      };
+    }
+
+    if (skillLevel) {
+      filter.skillLevel = skillLevel;
+    }
+
+    if (game) {
+      if (!mongoose.Types.ObjectId.isValid(game)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid game ID",
+        });
+      }
+
+      filter.preferredGames = game;
+    }
+
+    if (availability) {
+      filter.availability = availability;
+    }
+
+    const players = await User.find(filter)
+      .select("-password -email")
+      .populate(
+        "preferredGames",
+        "name type image description"
+      )
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: players.length,
+      players,
+    });
+  } catch (error) {
+    console.error("Get players error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching players",
+    });
+  }
+};
+
+// GET SINGLE PLAYER
+export const getPlayerById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Validate MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid player ID",
+      });
+    }
+
+    const player = await User.findOne({
+      _id: id,
+      role: "user",
+    })
+      .select("-password -email")
+      .populate(
+        "preferredGames",
+        "name type image description"
+      );
+
+    if (!player) {
+      return res.status(404).json({
+        success: false,
+        message: "Player not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      player,
+    });
+  } catch (error) {
+    console.error("Get player by ID error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching player",
+    });
+  }
+};
+
+const adminMiddleware = (req, res, next) => {
+  try {
+    // User must be authenticated first
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+    }
+
+    // Only admin can continue
+    if (req.user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Admin access required",
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.error("Admin middleware error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error while checking admin access",
+    });
+  }
+};
+
+export default adminMiddleware;
+
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
+
+const authMiddleware = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findById(decoded.userId).select("-password");
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    req.user = user;
+
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired token",
+    });
+  }
+};
+
+export default authMiddleware;
+
+import multer from "multer";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+
+import cloudinary from "../config/cloudinary.js";
+
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "local-sports/games",
+    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+  },
+});
+
+export default upload;
+
+import multer from "multer";
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+  },
+
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith("image/")) {
+      return cb(
+        new Error("Only image files are allowed")
+      );
+    }
+
+    cb(null, true);
+  },
+});
+
+export default upload;
+
+import mongoose from "mongoose";
+
+const gameSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
+
+    type: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    image: {
+      type: String,
+      default: "",
+    },
+
+    description: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  {
+    timestamps: true,
+  },
+);
+
+const Game = mongoose.model("Game", gameSchema);
+
+export default Game;
+
+import mongoose from "mongoose";
+
+const partnerRequestSchema = new mongoose.Schema(
+  {
+    sender: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    receiver: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    game: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Game",
+      required: true,
+    },
+
+    message: {
+      type: String,
+      trim: true,
+      maxlength: 300,
+      default: "",
+    },
+
+    status: {
+      type: String,
+      enum: ["pending", "accepted", "rejected"],
+      default: "pending",
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+const PartnerRequest = mongoose.model(
+  "PartnerRequest",
+  partnerRequestSchema
+);
+
+export default PartnerRequest;
+
+import mongoose from "mongoose";
+
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+
+    password: {
+      type: String,
+      required: true,
+      minlength: 6,
+    },
+
+    image: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    location: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    preferredGames: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Game",
+      },
+    ],
+
+    skillLevel: {
+      type: String,
+      enum: [
+        "Beginner",
+        "Intermediate",
+        "Advanced",
+      ],
+      default: "Beginner",
+    },
+
+     availability: {
+      type: String,
+      enum: [
+        "Available",
+        "Not Available"
+      ],
+      default: "Available",
+    },
+
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+const User = mongoose.model(
+  "User",
+  userSchema
+);
+
+export default User;
+
+import express from "express";
+
+import {
+  getAdminDashboard,
+  getAdminUsers,
+  getAdminUserById,
+  updateUserRole,
+  deleteAdminUser,
+
+  getAdminGames,
+  getAdminGameById,
+  createAdminGame,
+  updateAdminGame,
+  deleteAdminGame,
+
+  getAdminRequests,
+  updateAdminRequestStatus,
+  deleteAdminRequest,
+} from "../controllers/adminController.js";
+
+import authMiddleware from "../middleware/authMiddleware.js";
+import adminMiddleware from "../middleware/adminMiddleware.js";
+
+const router = express.Router();
+
+/* ============================================================
+   ADMIN PROTECTION
+============================================================ */
+
+router.use(authMiddleware);
+router.use(adminMiddleware);
+
+
+/* ============================================================
+   DASHBOARD
+============================================================ */
+
+router.get(
+  "/dashboard",
+  getAdminDashboard
+);
+
+
+/* ============================================================
+   USER MANAGEMENT
+============================================================ */
+
+router.get(
+  "/users",
+  getAdminUsers
+);
+
+router.get(
+  "/users/:id",
+  getAdminUserById
+);
+
+router.patch(
+  "/users/:id/role",
+  updateUserRole
+);
+
+router.delete(
+  "/users/:id",
+  deleteAdminUser
+);
+
+
+/* ============================================================
+   GAME MANAGEMENT
+============================================================ */
+
+router.get(
+  "/games",
+  getAdminGames
+);
+
+router.get(
+  "/games/:id",
+  getAdminGameById
+);
+
+router.post(
+  "/games",
+  createAdminGame
+);
+
+router.patch(
+  "/games/:id",
+  updateAdminGame
+);
+
+router.delete(
+  "/games/:id",
+  deleteAdminGame
+);
+
+/* ============================================================
+   PARTNER REQUEST MANAGEMENT
+============================================================ */
+
+router.get(
+  "/requests",
+  getAdminRequests
+);
+
+router.patch(
+  "/requests/:id/status",
+  updateAdminRequestStatus
+);
+
+router.delete(
+  "/requests/:id",
+  deleteAdminRequest
+);
+
+export default router;
+
+import express from "express";
+import multer from "multer";
+
+import {
+  registerUser,
+  loginUser,
+  logoutUser,
+  getMyProfile,
+  updateMyProfile,
+} from "../controllers/authController.js";
+
+import isAuthenticated from "../middleware/authMiddleware.js";
+
+const router = express.Router();
+
+// =====================================================
+// MULTER CONFIGURATION
+// =====================================================
+
+const storage = multer.memoryStorage();
+
+const upload = multer({
+  storage,
+});
+
+// =====================================================
+// AUTH ROUTES
+// =====================================================
+
+// =====================================================
+// REGISTER
+// =====================================================
+
+router.post(
+  "/register",
+  upload.single("image"),
+  registerUser
+);
+
+// =====================================================
+// LOGIN
+// =====================================================
+
+router.post(
+  "/login",
+  loginUser
+);
+
+// =====================================================
+// LOGOUT
+// =====================================================
+
+router.post(
+  "/logout",
+  logoutUser
+);
+
+// =====================================================
+// USER PROFILE
+// =====================================================
+
+// GET CURRENT LOGGED-IN USER
+router.get(
+  "/me",
+  isAuthenticated,
+  getMyProfile
+);
+
+// UPDATE CURRENT LOGGED-IN USER PROFILE
+router.put(
+  "/profile",
+  isAuthenticated,
+  upload.single("image"),
+  updateMyProfile
+);
+
+// =====================================================
+// EXPORT
+// =====================================================
+
+export default router;
+
+import express from "express";
+
+import {
+  getGames,
+  getGameById,
+} from "../controllers/gameController.js";
+
+const router = express.Router();
+
+router.get("/", getGames);
+
+router.get("/:id", getGameById);
+
+export default router;
+
+import express from "express";
+
+import {
+  sendPartnerRequest,
+  getReceivedRequests,
+  getSentRequests,
+  updateRequestStatus,
+  getMyPartners,
+} from "../controllers/partnerRequestController.js";
+
+import authMiddleware from "../middleware/authMiddleware.js";
+
+const router = express.Router();
+
+router.post("/", authMiddleware, sendPartnerRequest);
+
+router.get("/received", authMiddleware, getReceivedRequests);
+
+router.get("/sent", authMiddleware, getSentRequests);
+
+router.patch(
+  "/:id/status",
+  authMiddleware,
+  updateRequestStatus
+);
+
+router.get("/partners", authMiddleware, getMyPartners);
+
+export default router;
+
+import express from "express";
+
+import {
+  getPlayers,
+  getPlayerById,
+} from "../controllers/playerController.js";
+
+import authMiddleware from "../middleware/authMiddleware.js";
+
+const router = express.Router();
+
+router.get("/", authMiddleware, getPlayers);
+
+router.get(
+  "/:id",
+  authMiddleware,
+  getPlayerById
+);
+
+export default router;
+
+import "dotenv/config";
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
+
+import connectDB from "../config/db.js";
+import User from "../models/User.js";
+
+/* ============================================================
+   ADMIN SEED DATA
+   Credentials come from environment variables.
+============================================================ */
+
+const adminName = process.env.ADMIN_NAME;
+const adminEmail = process.env.ADMIN_EMAIL;
+const adminPassword = process.env.ADMIN_PASSWORD;
+
+/* ============================================================
+   VALIDATE ENVIRONMENT VARIABLES
+============================================================ */
+
+if (!adminName || !adminEmail || !adminPassword) {
+  console.error(
+    "❌ Missing admin environment variables."
+  );
+
+  console.error(`
+Required variables:
+
+ADMIN_NAME
+ADMIN_EMAIL
+ADMIN_PASSWORD
+  `);
+
+  process.exit(1);
+}
+
+/* ============================================================
+   CREATE ADMIN
+============================================================ */
+
+const createAdmin = async () => {
+  try {
+    await connectDB();
+
+    console.log("========================================");
+    console.log("       SPORTS CONNECT ADMIN SEED");
+    console.log("========================================");
+
+    const normalizedEmail = adminEmail
+      .toLowerCase()
+      .trim();
+
+    /* ========================================================
+       CHECK EXISTING USER
+    ======================================================== */
+
+    const existingUser = await User.findOne({
+      email: normalizedEmail,
+    });
+
+    /* ========================================================
+       EXISTING ADMIN
+    ======================================================== */
+
+    if (existingUser && existingUser.role === "admin") {
+      console.log("");
+      console.log("⚠️ Admin account already exists.");
+      console.log(`Email: ${existingUser.email}`);
+      console.log("");
+
+      await mongoose.connection.close();
+      process.exit(0);
+    }
+
+    /* ========================================================
+       EXISTING USER → PROMOTE TO ADMIN
+    ======================================================== */
+
+    if (existingUser) {
+      existingUser.role = "admin";
+
+      await existingUser.save();
+
+      console.log("");
+      console.log("✅ Existing user promoted to admin.");
+      console.log(`Email: ${existingUser.email}`);
+      console.log("");
+
+      await mongoose.connection.close();
+      process.exit(0);
+    }
+
+    /* ========================================================
+       HASH PASSWORD
+    ======================================================== */
+
+    const hashedPassword = await bcrypt.hash(
+      adminPassword,
+      12
+    );
+
+    /* ========================================================
+       CREATE ADMIN
+    ======================================================== */
+
+    const admin = await User.create({
+      name: adminName,
+      email: normalizedEmail,
+      password: hashedPassword,
+      location: "Kolkata",
+      skillLevel: "Advanced",
+      preferredGames: [],
+      role: "admin",
+    });
+
+    /* ========================================================
+       SUCCESS
+    ======================================================== */
+
+    console.log("");
+    console.log("✅ Admin created successfully!");
+    console.log("----------------------------------------");
+    console.log(`Name  : ${admin.name}`);
+    console.log(`Email : ${admin.email}`);
+    console.log(`Role  : ${admin.role}`);
+    console.log("----------------------------------------");
+    console.log("");
+
+    await mongoose.connection.close();
+
+    process.exit(0);
+  } catch (error) {
+    console.error("");
+    console.error("❌ Admin seed failed:");
+    console.error(error.message);
+    console.error("");
+
+    await mongoose.connection.close();
+
+    process.exit(1);
+  }
+};
+
+createAdmin();
+
+import dotenv from "dotenv";
+import mongoose from "mongoose";
+import connectDB from "../config/db.js";
+import Game from "../models/Game.js";
+
+dotenv.config();
+
+const games = [
+  {
+    name: "Badminton",
+    type: "Racquet Sport",
+    image:"https://res.cloudinary.com/diqr1juvf/image/upload/v1786209638/Esha_Biswas_lfctvo.jpg",
+    description:
+      "A fast-paced indoor racquet sport played in singles or doubles.",
+  },
+  {
+    name: "Table Tennis",
+    type: "Indoor Sport",
+    image:"https://res.cloudinary.com/diqr1juvf/image/upload/v1786213253/image_1_2_j2kmts.jpg",
+    description:
+      "A fast indoor paddle sport played on a table between two or four players.",
+  },
+  {
+    name: "Basketball",
+    type: "Team Sport",
+    image:"https://res.cloudinary.com/diqr1juvf/image/upload/v1786213361/image_1786213341876_q5xrqo.jpg",
+    description:
+      "A team sport where players score by shooting a ball through a basketball hoop.",
+  },
+  {
+    name: "Football",
+    type: "Team Sport",
+    image:"https://res.cloudinary.com/diqr1juvf/image/upload/v1786213508/image_1786213488670_kqxbsd.jpg",
+    description:
+      "A team sport played by two teams competing to score goals.",
+  },
+  {
+    name: "Cricket",
+    type: "Bat-and-Ball Sport",
+    image:"https://res.cloudinary.com/diqr1juvf/image/upload/v1786213639/image_1786213616023_h9hqy2.jpg",
+    description:
+      "A bat-and-ball team sport played between two teams on a cricket field.",
+  },
+  {
+    name: "Volleyball",
+    type: "Team Sport",
+    image:"https://res.cloudinary.com/diqr1juvf/image/upload/v1786213711/image_1786213691991_dzopmu.jpg",
+    description:
+      "A team sport where players hit a ball over a net to score points.",
+  },
+  {
+    name: "Chess",
+    type: "Board Game",
+    image:"",
+    description:
+      "A strategic two-player board game focused on planning and tactical play.",
+  },
+  {
+    name: "Carrom",
+    type: "Indoor Board Game",
+    image:"https://res.cloudinary.com/diqr1juvf/image/upload/v1786213880/image_1_4_fbstar.jpg",
+    description:
+      "A popular indoor tabletop game played by striking discs into corner pockets.",
+  },
+];
+
+const seedGames = async () => {
+  try {
+    await connectDB();
+
+    await Game.deleteMany();
+
+    await Game.insertMany(games);
+
+    console.log("Games seeded successfully");
+
+    await mongoose.connection.close();
+    process.exit(0);
+  } catch (error) {
+    console.error("Game seeding failed:", error);
+
+    await mongoose.connection.close();
+    process.exit(1);
+  }
+};
+
+seedGames();
+
+import jwt from "jsonwebtoken";
+
+const generateToken = (userId) => {
+  return jwt.sign(
+    {
+      userId,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: process.env.JWT_EXPIRES_IN || "7d",
+    }
+  );
+};
+
+export default generateToken;
+
+
+PORT=8000
+
+JWT_SECRET=xxx-xxx-xxx
+
+MONGODB_URI=xxx-xxx-xxx
+
+ADMIN_NAME=xxxx
+ADMIN_EMAIL=xxxxx xxxxx xxxxxx
+ADMIN_PASSWORD=xxx xxx xxxxxx xxx
+
+
+CLOUDINARY_CLOUD_NAME=xxxx 
+CLOUDINARY_API_KEY=xxxx xxxx xx xxxx xx
+CLOUDINARY_API_SECRET=xxxxxxxxxxx xxxxxxxxxx
+
+CLIENT_URL=xxxxx xxxxxx xxxxxx
+
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "local sports indoor games partner find",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server.js",
+    "seed:games": "node seed/gameSeed.js",
+    "seed:admin": "node seed/adminSeed.js"
+    
+  },
+  "repository": {
+    "type": "git",
+    "url": "Local-Sports-Indoor-Games-Partner-Finder-Platform"
+  },
+  "author": "abdul bari",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^1.41.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.9.1",
+    "multer": "^2.2.0",
+    "multer-storage-cloudinary": "^4.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
+
+import "dotenv/config";
+
+import express from "express";
+import cors from "cors";
+
+import connectDB from "./config/db.js";
+import cloudinary from "./config/cloudinary.js";
+
+import authRoutes from "./routes/authRoutes.js";
+import gameRoutes from "./routes/gameRoutes.js";
+import playerRoutes from "./routes/playerRoutes.js";
+import partnerRequestRoutes from "./routes/partnerRequestRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
+
+const app = express();
+
+connectDB();
+
+/* ============================================================
+   CORS
+============================================================ */
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://local-sports-indoor-games-partner-f-weld.vercel.app",
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(
+        new Error(`CORS blocked for origin: ${origin}`)
+      );
+    },
+    credentials: true,
+  })
+);
+
+app.use(express.json());
+
+/* ============================================================
+   HEALTH CHECK
+============================================================ */
+
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message:
+      "Local Sports Partner Finder API is running",
+  });
+});
+
+/* ============================================================
+   ROUTES
+============================================================ */
+
+app.use("/api/auth", authRoutes);
+
+app.use("/api/admin", adminRoutes);
+
+app.use("/api/games", gameRoutes);
+
+app.use("/api/players", playerRoutes);
+
+app.use("/api/requests", partnerRequestRoutes);
+
+/* ============================================================
+   ROOT
+============================================================ */
+
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message:
+      "Local Sports & Indoor Games Partner Finder Platform API",
+  });
+});
+
+/* ============================================================
+   SERVER
+============================================================ */
+
+const PORT = process.env.PORT || 8000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
