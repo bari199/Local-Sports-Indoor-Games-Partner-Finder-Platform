@@ -98,7 +98,7 @@ const AdminHeader = () => {
     },
     {
       label: "Settings",
-      path: "/admin/settings",
+      path: "/profile",
       icon: Settings,
     },
   ];
